@@ -1,6 +1,8 @@
-# AFM v3 — GitOps DevSecOps Banking Platform
+# AFM v3 — GitOps DevSecOps Cloud Platform
 
-> **Automated Financial Management (AFM)** — a production-inspired cloud-native platform demonstrating AWS, Terraform, Amazon EKS, GitLab CI/CD, DevSecOps, Argo CD GitOps, observability, and AI-assisted read-only platform operations.
+> **AFM = Application / Feature / Microservice**
+
+> AFM v3 is a production-inspired cloud-native **DevOps, DevSecOps, GitOps and platform engineering project** built around a small reference application, **AFM Bank**, and evolved into an AWS EKS-based platform with CI/CD, Infrastructure as Code, security, observability, SRE practices and a read-only AI-assisted operations layer.
 
 ![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.11-6DB33F?logo=springboot)
@@ -16,449 +18,491 @@
 
 ---
 
-## 📌 Project Snapshot
+## 🚀 Project at a Glance
 
-| Attribute | Details |
-|---|---|
-| Platform | AFM — Automated Financial Management |
-| Version | `3.0.0` |
-| Domain | `afmcloud.in` |
-| Cloud | AWS |
-| Kubernetes | Amazon EKS |
-| Application Runtime | Java 17 |
-| Framework | Spring Boot 3.3.11 |
-| CI/CD | GitLab CI/CD |
-| Container Registry | Amazon ECR |
-| Deployment | Argo CD / GitOps |
-| IaC | Terraform |
-| Security | SonarQube, Trivy, Trivy IaC, OWASP ZAP |
-| Observability | Prometheus, Grafana, Alertmanager, YACE, CloudWatch |
-| AI Operations | APA — AFM Platform Assistant |
-| LLM | OpenAI API / GPT-4o-mini |
-| Vector Store | ChromaDB |
-| UI | Streamlit |
+AFM v3 demonstrates the complete lifecycle of a cloud-native application and the platform built around it.
 
----
+```text
+Application
+    ↓
+Source Control
+    ↓
+CI/CD + Security
+    ↓
+Container Image
+    ↓
+Infrastructure as Code
+    ↓
+AWS / EKS
+    ↓
+GitOps / Argo CD
+    ↓
+Observability / SRE
+    ↓
+Read-only AI-assisted Operations
+```
 
-# 🚀 Overview
+The project is primarily about **how the platform is engineered and operated**. The reference application supplies a realistic workload for the platform; it is not intended to represent a real banking system.
 
-The **Automated Financial Management (AFM) v3** platform is a production-inspired cloud-native microservices platform built to demonstrate an end-to-end DevOps and platform engineering lifecycle on AWS.
+### What this repository covers
 
-The platform brings together:
-
-- Infrastructure as Code with Terraform
-- AWS networking and managed services
-- Amazon EKS and Kubernetes
+- Application and microservice architecture
+- AWS cloud infrastructure
+- Terraform Infrastructure as Code
+- EKS and Kubernetes
 - GitLab CI/CD
 - Docker and Amazon ECR
 - Argo CD GitOps
-- Application and infrastructure security scanning
-- Route 53 and ACM-managed HTTPS
-- AWS Secrets Manager
-- External Secrets
-- Kubernetes RBAC
-- EKS Pod Identity
-- Prometheus and Grafana
-- Alertmanager and Slack notifications
-- YACE for AWS/CloudWatch metrics
-- SRE-oriented dashboards
-- Cost-conscious infrastructure design
-- **APA — a strictly read-only AI Platform Assistant**
-
-The project is intentionally **production-inspired rather than a production banking system**. The architecture demonstrates real-world engineering patterns while operating within practical portfolio-project constraints such as limited infrastructure budget and ephemeral development infrastructure.
+- DevSecOps security controls
+- Secrets management and workload identity
+- Prometheus, Grafana, Alertmanager and YACE
+- SRE-oriented operational dashboards
+- Troubleshooting and operational workflows
+- APA — AFM Platform Assistant
+- Static RAG and dynamic read-only AWS/Kubernetes access
+- Engineering challenges, limitations and roadmap
+- A separate **Engineering Decisions & Trade-offs** section at the end
 
 ---
 
+## 🧱 What Was Built
 
-## 📑 Table of Contents
+AFM v3 is implemented as a collection of independently versioned application, infrastructure, GitOps, observability and AI/platform components.
 
-- [Project Snapshot](#-project-snapshot)
-- [Overview](#-overview)
-- [Project Objectives](#-project-objectives)
-- [End-to-End Platform Lifecycle](#-end-to-end-platform-lifecycle)
-- [Platform Architecture](#-platform-architecture)
-- [AWS Platform Architecture](#-aws-platform-architecture)
-- [DNS, HTTPS and TLS](#-dns-https-and-tls)
-- [Infrastructure as Code — Terraform](#-infrastructure-as-code--terraform)
-- [Amazon EKS Platform](#-amazon-eks-platform)
-- [Application Microservices](#-application-microservices)
-- [DevSecOps Architecture](#-devsecops-architecture)
-- [Blue-Green Deployment](#-blue-green-deployment--authentication-service)
-- [GitOps with Argo CD](#-gitops-with-argo-cd)
-- [Observability](#-observability)
-- [AI Platform Operations — APA](#-ai-platform-operations--apa)
-- [APA Architecture](#-apa-architecture)
-- [Operational Challenges](#-operational-challenges-and-engineering-decisions)
-- [Portfolio Evidence](#-portfolio-evidence)
-- [Known Limitations](#-known-limitations)
-- [Future Roadmap](#-future-roadmap)
-- [Skills Demonstrated](#-skills-demonstrated)
-- [Final Takeaway](#-final-takeaway)
-
-
-# 🎯 Project Objectives
-
-AFM v3 was designed to demonstrate the ability to:
-
-1. Provision AWS infrastructure reproducibly using Terraform.
-2. Deploy and operate workloads on Amazon EKS.
-3. Build application containers through GitLab CI/CD.
-4. Scan application code, container images and infrastructure configuration.
-5. Store immutable application images in Amazon ECR.
-6. Deploy Kubernetes workloads through GitOps with Argo CD.
-7. Secure application secrets using AWS Secrets Manager and workload identity.
-8. Expose the application through Route 53, ACM and an AWS Application Load Balancer.
-9. Monitor application, Kubernetes and AWS infrastructure.
-10. Deliver operational alerts through Alertmanager and Slack.
-11. Handle Kubernetes pod-capacity constraints on cost-conscious worker nodes.
-12. Provide engineers with a natural-language, read-only interface to platform knowledge and current infrastructure state through APA.
-
----
-
-# 🔄 End-to-End Platform Lifecycle
-
-```text
-                         Developer
-                            │
-                            ▼
-                         GitLab
-                            │
-             ┌──────────────┴──────────────┐
-             │                             │
-             ▼                             ▼
-       Application CI/CD             Infrastructure CI/CD
-             │                             │
-             ▼                             ▼
-      Security Validation             Terraform / Trivy IaC
-             │                             │
-             ▼                             ▼
-        Docker Image                  AWS / EKS Platform
-             │
-             ▼
-        Amazon ECR
-             │
-             ▼
-      GitOps Repository
-             │
-             ▼
-          Argo CD
-             │
-             ▼
-          Amazon EKS
-             │
-      ┌──────┼─────────┐
-      ▼      ▼         ▼
-   AFM Apps  APA   Observability
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-      Static       Dynamic
-       RAG       AWS / K8s Read-only
-        │             │
-        └──────┬──────┘
-               ▼
-          OpenAI API
-               │
-               ▼
-        AI-grounded response
-```
-
----
-
-# 🏗️ Platform Architecture
-
-AFM uses a **Backend-for-Frontend (BFF)** pattern.
-
-The frontend is the public application entry point. It presents the dashboard and proxies selected API requests to the internal registration and login services. Those gateway services communicate with the core authentication service.
-
-The authentication service owns the persistence and identity-related operations and accesses Amazon RDS PostgreSQL and AWS Secrets Manager.
-
-```text
-                         Client / Browser
-                                │
-                         HTTPS — afmcloud.in
-                                │
-                                ▼
-                    Application Load Balancer
-                                │
-                         Kubernetes Ingress
-                                │
-                                ▼
-                     afm-frontend-ui
-                     BFF / Dashboard
-                       │             │
-                       │             │
-                       ▼             ▼
-              Registration         Login
-                 Service           Service
-                       │             │
-                       └──────┬──────┘
-                              ▼
-                       afm-auth-service
-                       Identity / JWT Core
-                         │            │
-                         ▼            ▼
-                  Amazon RDS       AWS Secrets
-                   PostgreSQL       Manager
-```
-
-### Architectural responsibilities
-
-| Component | Responsibility |
+| Capability | Implemented components |
 |---|---|
-| `afm-frontend-ui` | Customer-facing UI and BFF/proxy layer |
-| `afm-registration-service` | Registration gateway/proxy |
-| `afm-login-service` | Login/authentication gateway/proxy |
-| `afm-auth-service` | Core identity, JWT, persistence and secret access |
-| Amazon RDS PostgreSQL | Persistent application data |
-| AWS Secrets Manager | Sensitive credentials and JWT-related secrets |
-| Amazon EKS | Kubernetes runtime |
-| ALB + Ingress | Public HTTPS entry and routing |
+| Cloud foundation | AWS VPC, public/private subnets, routing, security groups, Internet Gateway, NAT Instance |
+| Kubernetes platform | Amazon EKS, worker nodes, EKS addons, workload scheduling and capacity configuration |
+| Application runtime | Java 17, Spring Boot, four AFM application components, executable JARs and Docker images |
+| Database | Amazon RDS PostgreSQL |
+| Application ingress | Route 53, ACM, Application Load Balancer and AWS Load Balancer Controller |
+| Infrastructure as Code | Terraform modules, environment configuration, remote S3 state and S3-native locking |
+| Container registry | Amazon ECR |
+| CI/CD | GitLab CI/CD pipelines for application and infrastructure workflows |
+| GitOps | Git-based Kubernetes desired state with Argo CD reconciliation |
+| Security | SonarQube, Trivy container scanning, Trivy IaC, OWASP ZAP, IAM, RBAC and workload identity |
+| Secrets | AWS Secrets Manager, External Secrets and Kubernetes Secret integration |
+| Observability | Prometheus, Grafana, Alertmanager, YACE, CloudWatch and Slack notifications |
+| SRE operations | Service health, request/error/latency metrics, SLO-oriented views, alerting and incident runbooks |
+| AI-assisted operations | APA, Streamlit, static RAG, ChromaDB, OpenAI API, Kubernetes API and Boto3 |
+| Platform safety | Strictly read-only APA permissions for AWS and Kubernetes access |
+
+The project therefore contains both the **platform infrastructure** and the **delivery/operations systems required to operate the reference workload on that platform**.
+
 
 ---
 
-# ☁️ AWS Platform Architecture
+## 📌 What is AFM?
+
+**AFM originally stood for Application / Feature / Microservice.**
+
+The project started with application/microservice development and progressively evolved into a complete cloud-native delivery and operations platform.
+
+A small reference application, **AFM Bank**, is used only as a demo workload. It is **not a banking product** and the project is not intended to model real banking business processes.
 
 ```text
-                              Internet
-                                  │
-                                  ▼
-                            Route 53 DNS
-                                  │
-                                  ▼
-                         afmcloud.in / HTTPS
-                                  │
-                                  ▼
-                    AWS Application Load Balancer
-                                  │
-                         ACM TLS Certificate
-                                  │
-                                  ▼
-                    AWS Load Balancer Controller
-                                  │
-                                  ▼
-                         Kubernetes Ingress
-                                  │
-                                  ▼
+                         AFM v3 PLATFORM
+                               │
+             ┌─────────────────┼─────────────────┐
+             │                 │                 │
+             ▼                 ▼                 ▼
+       Reference App          APA          Observability
+        (AFM Bank)      Platform Assistant    & SRE
+             │                 │                 │
+             └─────────────────┴─────────────────┘
+                               │
+                               ▼
+                    AWS / EKS / GitOps Platform
+```
+
+Where:
+
+- **AFM v3** = the overall cloud, DevOps, DevSecOps, GitOps and platform engineering project
+- **AFM Bank** = the small reference/demo application
+- **APA** = AFM Platform Assistant
+- **Observability** = Prometheus, Grafana, Alertmanager, YACE and CloudWatch-based monitoring
+
+The primary portfolio story is **the AFM v3 platform and its engineering lifecycle**, not the banking domain.
+
+---
+
+## 🎯 Project Objectives
+
+AFM v3 demonstrates an end-to-end engineering lifecycle across:
+
+- Cloud infrastructure
+- Infrastructure as Code
+- Linux and containers
+- Kubernetes / EKS
+- Application delivery
+- CI/CD
+- GitOps
+- DevSecOps
+- Security and secrets management
+- Observability
+- SRE-oriented operations
+- Platform engineering
+- AI-assisted, read-only operations
+
+The main body of this README explains **what the project contains, how the components work together, and how software and infrastructure move through the platform**. Detailed architectural reasoning is intentionally consolidated at the end.
+
+---
+
+# 🔄 How AFM v3 Works End-to-End
+
+The complete lifecycle connects source code, infrastructure, security, deployment, observability and read-only operational assistance.
+
+```text
+                           DEVELOPER
+                               │
+                               ▼
+                    GitLab Application Repo
+                               │
+                               ▼
+                         GitLab CI/CD
+                               │
+             ┌─────────────────┼──────────────────┐
+             │                 │                  │
+             ▼                 ▼                  ▼
+          Maven            SonarQube            Trivy
+             │                 │                  │
+             └─────────────────┴──────────────────┘
+                               │
+                               ▼
+                         Docker Build
+                               │
+                               ▼
+                          Amazon ECR
+                               │
+                               ▼
+                       GitOps Repository
+                               │
+                               ▼
+                            Argo CD
+                               │
+                               ▼
                            Amazon EKS
-                  ┌───────────────┴───────────────┐
-                  │                               │
-             Worker Node                     APA Node
-                  │                               │
-            AFM / Platform                      APA
-             Workloads                        Workload
-                  │                               │
-                  └───────────────┬───────────────┘
-                                  │
-                   ┌──────────────┼──────────────┐
-                   ▼              ▼              ▼
-              Amazon RDS    AWS Secrets       Amazon S3
-              PostgreSQL      Manager       State / Logs
+                    ┌──────────┼───────────┐
+                    │          │           │
+                    ▼          ▼           ▼
+                AFM Apps     APA     Observability
+                    │          │           │
+                    ▼          │      Prometheus
+                   RDS         │      Grafana
+                               │      Alertmanager
+                               │      YACE
+                               │          │
+                               │        Slack
+                               │
+                    ┌──────────┴──────────┐
+                    ▼                     ▼
+              Kubernetes API           AWS APIs
+                    │                     │
+                    └──────────┬──────────┘
+                               ▼
+                         Retrieved Evidence
+                               │
+                               ▼
+                          OpenAI API
+                               │
+                               ▼
+                         Grounded Answer
 ```
 
-The platform also uses AWS networking, IAM, ECR, Route 53, ACM, ALB, NAT infrastructure, CloudWatch and other supporting services.
-
----
-
-# 🌐 DNS, HTTPS and TLS
-
-AFM v3 uses the custom domain:
-
-```text
-afmcloud.in
-```
-
-Public traffic follows:
-
-```text
-Client
-  ↓
-Route 53
-  ↓
-HTTPS
-  ↓
-Application Load Balancer
-  ↓
-ACM Certificate
-  ↓
-TLS Termination
-  ↓
-Kubernetes Ingress
-  ↓
-ClusterIP Service
-  ↓
-Application Pod
-```
-
-### Security model
-
-- Route 53 provides DNS resolution.
-- AWS Certificate Manager provides the public TLS certificate.
-- The Application Load Balancer terminates public TLS.
-- The AWS Load Balancer Controller manages the ALB from Kubernetes resources.
-- Backend services are not directly exposed to the Internet.
-- Internal service-to-service communication currently uses HTTP inside the EKS networking boundary.
-- Network isolation is provided through private networking, Security Groups, Kubernetes RBAC and IAM/workload identity.
-- mTLS is **not** currently implemented because the platform does not deploy a service mesh.
-
-### Future enterprise enhancement
-
-A service mesh such as Istio or Linkerd could be introduced later for:
-
-- mTLS
-- Service-to-service identity
-- Advanced traffic policies
-- Distributed tracing integration
-- More granular service observability
-
----
-
-# 🏗️ Infrastructure as Code — Terraform
-
-Infrastructure is provisioned using **Terraform** following Infrastructure as Code principles.
-
-The Terraform code is organized into reusable modules and environment-specific configurations.
-
-## Major infrastructure areas
-
-- VPC
-- Public/private networking
-- Route tables
-- Internet Gateway
-- NAT Instance
-- IAM
-- EKS
-- EKS cluster base
-- EKS addons
-- ECR
-- RDS PostgreSQL
-- Route 53
-- ACM
-- ALB logging
-- AWS Secrets Manager
-- External Secrets
-- EKS Pod Identity
-
-## Terraform state
-
-Terraform remote state is stored in Amazon S3.
-
-The current implementation uses **S3 native state locking**:
-
-```hcl
-use_lockfile = true
-```
-
-DynamoDB is not used for Terraform state locking in the current implementation.
-
-## Infrastructure lifecycle
+### Infrastructure lifecycle
 
 ```text
 Terraform Source
-       ↓
-GitLab CI/CD
-       ↓
-Validate
-       ↓
-Trivy IaC Scan
-       ↓
+      ↓
+GitLab Infrastructure Pipeline
+      ↓
+Terraform Validation
+      ↓
+Trivy IaC
+      ↓
 Terraform Plan
-       ↓
-Approval / Pipeline Control
-       ↓
-Terraform Apply
-       ↓
-AWS Platform
+      ↓
+Controlled Apply
+      ↓
+AWS Resources
+      ↓
+EKS / RDS / Networking / Security
 ```
 
-Infrastructure can also be destroyed through the controlled infrastructure pipeline when the ephemeral development environment is no longer required.
+### Application delivery lifecycle
+
+```text
+Application Commit
+      ↓
+GitLab CI/CD
+      ↓
+Build + Unit Tests
+      ↓
+SonarQube
+      ↓
+Docker Build
+      ↓
+Trivy Container Scan
+      ↓
+Amazon ECR
+      ↓
+GitOps Manifest Update
+      ↓
+Argo CD
+      ↓
+Amazon EKS
+      ↓
+OWASP ZAP
+      ↓
+Quality Gate
+```
+
+### Operational lifecycle
+
+```text
+Deploy
+  ↓
+Observe
+  ↓
+Detect
+  ↓
+Alert
+  ↓
+Investigate
+  ↓
+Understand
+  ↓
+Engineer-controlled remediation
+  ↓
+Verify
+```
+
+APA participates in the **Understand** stage by retrieving project documentation and current read-only AWS/Kubernetes state. It does not perform the remediation step.
+
 
 ---
 
-# ☸️ Amazon EKS Platform
+# 🧭 Project Evolution
 
-Amazon EKS is the runtime platform for:
+AFM was not designed as a finished architecture on day one.
 
-- AFM application workloads
-- Kubernetes platform components
-- Observability components
-- APA
-
-The EKS lifecycle is organized around:
+It evolved incrementally:
 
 ```text
-EKS Cluster
-    │
-    ├── Cluster Base
-    │
-    └── EKS Addons
+Simple Application / Microservice
+             │
+             ▼
+       GitLab CI/CD
+             │
+             ▼
+        Containerization
+             │
+             ▼
+      AWS Infrastructure
+             │
+             ▼
+       Amazon EKS
+             │
+             ▼
+      Amazon RDS PostgreSQL
+             │
+             ▼
+    Route 53 + ACM + ALB
+             │
+             ▼
+       DevSecOps Controls
+             │
+             ▼
+        Argo CD GitOps
+             │
+             ▼
+ Prometheus + Grafana + Alerts
+             │
+             ▼
+        SRE Operations
+             │
+             ▼
+       Static APA / RAG
+             │
+             ▼
+     Dynamic APA on EKS
+             │
+             ▼
+Read-Only AWS + Kubernetes Operations
 ```
 
-The platform is designed for cost-conscious development/testing rather than high-availability production workloads.
+This evolution is a central part of the project rather than an afterthought.
 
 ---
 
-# 📈 EKS Pod Capacity and Networking
-
-Worker-node pod capacity became an important engineering consideration during the project.
-
-AFM v3 uses:
-
-### VPC CNI Prefix Delegation
-
-Prefix delegation increases the available pod IP allocation capacity compared with relying only on individual secondary IP allocation.
-
-### Custom max-pods configuration
-
-The worker-node launch template is configured so that Kubernetes pod scheduling capacity is not limited only by the default instance-type calculation.
-
-Conceptually:
+# 🏗️ Final Architecture
 
 ```text
-EKS Worker Node
-      │
-      ├── ENI
-      │
-      ├── Prefix Delegation
-      │
-      └── Custom max-pods configuration
-                    ↓
-             Higher pod capacity
+                              Internet / Client
+                                      │
+                                      │ DNS lookup
+                                      ▼
+                                   Route 53
+                                      │
+                                      │ DNS → ALB
+                                      ▼
+                           Application Load Balancer
+                                      │
+                                      │ HTTPS :443
+                                      │
+                                      └── ACM TLS Certificate
+                                          (TLS termination)
+                                      │
+                                      ▼
+                               Kubernetes Ingress
+                                      │
+                                      ▼
+                              ┌───────────────────┐
+                              │  afm-frontend-ui  │
+                              │      UI + BFF      │
+                              └─────────┬─────────┘
+                                        │
+                              ┌─────────┴─────────┐
+                              │                   │
+                              ▼                   ▼
+                      Registration             Login
+                         Service              Service
+                              │                   │
+                              └─────────┬─────────┘
+                                        ▼
+                                afm-auth-service
+                               Identity / JWT Core
+                                        │
+                              ┌─────────┴─────────┐
+                              │                   │
+                              ▼                   ▼
+                         PostgreSQL         AWS Secrets
+                            RDS               Manager
 ```
 
-This allows the selected cost-conscious EC2 instance type to support more Kubernetes workload pods than its unmodified default pod limit.
+The platform around the application:
+
+```text
+                         AWS
+                          │
+          ┌───────────────┼────────────────┐
+          │               │                │
+        EKS              RDS              S3
+          │                              State/
+          │                               Logs
+     ┌────┴─────┐
+     │          │
+     ▼          ▼
+ AFM Apps      APA
+              │
+       ┌──────┴────────┐
+       ▼               ▼
+   Static RAG     Dynamic Access
+       │            │       │
+   ChromaDB       K8s      AWS
+                    │       │
+                    └───┬───┘
+                        ▼
+                   OpenAI API
+```
 
 ---
 
-# 🖥️ Worker-Node and APA Workload Separation
+# 🧩 Application Architecture
 
-The current platform uses two EKS worker nodes.
+AFM Bank uses four application components.
 
-The platform/application workloads and APA are separated so that APA does not unnecessarily compete with the primary AFM workload capacity.
+| Component | Role | Responsibility |
+|---|---|---|
+| `afm-frontend-ui` | UI + BFF | Public application entry point and browser-facing API layer |
+| `afm-registration-service` | Registration gateway | Handles registration-facing API workflow |
+| `afm-login-service` | Login gateway | Handles login-facing API workflow |
+| `afm-auth-service` | Identity core | Owns authentication, JWT handling, persistence and AWS secret access |
+
+The resulting application flow is:
 
 ```text
-                    Amazon EKS
+Browser
+   │
+   ▼
+Frontend / BFF
+   │
+   ├──────────────► Registration Service
+   │
+   └──────────────► Login Service
                          │
-             ┌───────────┴───────────┐
-             │                       │
-             ▼                       ▼
-        Platform Node            APA Node
-             │                       │
-      AFM / Platform                 APA
-        Workloads                  Workload
+                         ▼
+                  Auth Service
+                    │       │
+                    ▼       ▼
+                  RDS    Secrets Manager
 ```
-
-The dedicated APA capacity is particularly useful because APA adds an additional Python/LLM-oriented workload to the platform.
 
 ---
 
-# 🌐 VPC and NAT Architecture
+# 🔄 WAR → Executable JAR Evolution
 
-The platform uses a Terraform-managed VPC with public and private networking.
+Earlier application packaging used a traditional WAR-style model.
 
-Major components include:
+AFM v3 moved toward:
 
-- VPC
+```text
+Spring Boot
+    ↓
+Executable JAR
+    ↓
+Docker Image
+    ↓
+Amazon EKS
+```
+
+This removes the need to manage a separate application-server lifecycle inside the deployment environment.
+
+It is a small but meaningful modernization decision.
+
+---
+
+# ☁️ AWS Architecture
+
+AFM uses AWS as the cloud platform.
+
+Major services include:
+
+- Amazon VPC
+- Amazon EC2
+- Amazon EKS
+- Amazon RDS PostgreSQL
+- Amazon ECR
+- Amazon S3
+- AWS Secrets Manager
+- IAM
+- EKS workload identity
+- Route 53
+- AWS Certificate Manager (ACM)
+- Application Load Balancer
+- CloudWatch
+
+These services form the cloud foundation on which the application, GitOps, observability and APA layers run.
+# 💰 Cost-Conscious Infrastructure Design
+
+The platform is deliberately designed for development/testing and portfolio demonstration rather than production HA.
+
+The project uses:
+
+- Cost-conscious EC2 worker nodes
+- NAT Instance rather than NAT Gateway
+- Ephemeral EKS infrastructure
+- Controlled infrastructure destruction
+- Persistent storage only where required
+- Long-lived AWS resources kept selectively where recreating them would be unnecessary or expensive
+
+The development EKS environment can be destroyed when it is not required.
+
+This results in a lower-cost environment with intentionally reduced availability and redundancy compared with a production multi-AZ architecture.
+# 🌐 Networking
+
+The platform uses a Terraform-managed VPC with:
+
 - Public subnets
 - Private subnets
 - Route tables
@@ -466,654 +510,387 @@ Major components include:
 - NAT Instance
 - Security Groups
 - EKS networking
-- Application Load Balancer
+- Application Load Balancer integration
 
-A NAT Instance is used for outbound connectivity from private networking as part of the project's cost-conscious design.
+The design separates public ingress from private application/database resources and provides the network foundation for EKS workloads.
+# 🌍 DNS, HTTPS and Public Traffic
 
----
-
-# 🧩 Application Microservices
-
-AFM contains four application components.
-
-| Service | Port | Type | Responsibility |
-|---|---:|---|---|
-| `afm-frontend-ui` | `8080` | Web App / BFF | Dashboard UI and public BFF/proxy entry point |
-| `afm-registration-service` | `8081` | REST Proxy | Registration gateway |
-| `afm-login-service` | `8082` | REST Proxy | Login/authentication gateway |
-| `afm-auth-service` | `8080` | Identity Core | Authentication, JWT, persistence and secret access |
-
-The frontend and backend services are independently containerized and deployed.
-
----
-
-# 🔐 Application Authentication
-
-The core authentication service provides:
-
-- User registration
-- Password hashing using BCrypt
-- User persistence
-- JWT generation
-- JWT validation
-- Authentication-related API endpoints
-- AWS Secrets Manager integration
-
-The platform currently uses JWT-based authentication.
-
-Refresh-token rotation and explicit token revocation/blacklisting are not part of the current implementation.
-
----
-
-# 🔌 Unified API Reference
-
-The following routes represent the documented application flow.
-
-## User Registration
-
-```http
-POST /api/proxy/register
-POST /api/register
-POST /api/auth/register
-
-Content-Type: application/json
-
-{
-  "username": "johndoe",
-  "password": "SecurePassword123!"
-}
-```
-
-Expected responses include:
-
-- `200 OK` / `201 Created` for successful registration
-- `400 Bad Request` for invalid registration input
-- `409 Conflict` when the username already exists
-
-## User Login
-
-```http
-POST /api/proxy/login
-POST /api/login
-POST /api/auth/login
-
-Content-Type: application/json
-
-{
-  "username": "johndoe",
-  "password": "SecurePassword123!"
-}
-```
-
-Successful authentication returns a JWT and user information.
-
-## Token Validation
-
-```http
-POST /api/login/validate
-POST /api/auth/validate
-
-Content-Type: application/json
-
-{
-  "token": "eyJhbGci..."
-}
-```
-
-The validation response indicates whether the token is valid and, when valid, provides the associated user information and expiry information.
-
----
-
-# 🛡️ DevSecOps Architecture
-
-AFM integrates security controls into both application and infrastructure delivery.
-
-## Application pipeline
-
-The application pipeline follows the current seven-stage delivery flow:
+The public application uses:
 
 ```text
-1. Pre-cleanup
-       ↓
-2. Maven Build / Test
-       ↓
-3. SonarQube Analysis
-       ↓
-4. Docker Build & Push to ECR
-       ↓
-5. Trivy Container Scan
-       ↓
-6. GitOps Update
-       ↓
-7. OWASP ZAP Scan / Quality Gate
+afmcloud.in
 ```
 
-The exact pipeline implementation can vary slightly by repository, but the security and delivery controls are consistently applied across the application ecosystem.
-
-## Infrastructure pipeline
-
-Infrastructure security is handled separately:
+Traffic flow:
 
 ```text
-Terraform Code
-      ↓
-Validation
-      ↓
-Trivy IaC
-      ↓
-Terraform Plan
-      ↓
-Apply
+Client / Browser
+      │
+      │ DNS lookup
+      ▼
+   Route 53
+      │
+      │ DNS → ALB
+      ▼
+Application Load Balancer
+      │
+      │ HTTPS :443
+      │
+      └── ACM TLS Certificate
+          (TLS termination)
+      │
+      ▼
+AWS Load Balancer Controller
+      │
+      ▼
+Kubernetes Ingress
+      │
+      ▼
+Frontend Service
+      │
+      ▼
+Application Pod
 ```
 
-This keeps infrastructure configuration scanning separate from container/image scanning.
-
 ---
 
-# 🔎 Security Tooling
+# 🏗️ Infrastructure as Code — Terraform
 
-| Tool / Control | Purpose |
-|---|---|
-| SonarQube | Static code analysis / SAST |
-| Trivy | Container image vulnerability scanning |
-| Trivy IaC | Terraform/IaC security scanning |
-| OWASP ZAP | Dynamic application security testing |
-| AWS Secrets Manager | Sensitive secret storage |
-| External Secrets | Secret synchronization into Kubernetes |
-| EKS Pod Identity | AWS workload identity |
-| Kubernetes RBAC | Kubernetes authorization |
-| IAM | AWS authorization |
-| ACM | TLS certificates |
-| Security Groups | Network-level access control |
-| BCrypt | Password hashing |
+Terraform is used to provision AWS infrastructure reproducibly.
 
----
+The project separates reusable modules from environment-specific configuration.
 
-# 🧪 OWASP ZAP
+Major areas include:
 
-OWASP ZAP is integrated as a post-deployment security validation stage.
+- VPC and networking
+- IAM
+- Amazon EKS
+- EKS addons
+- Amazon ECR
+- Amazon RDS PostgreSQL
+- Route 53
+- ACM
+- ALB logging
+- AWS Secrets Manager
+- External Secrets
+- EKS workload identity
 
-The current ZAP baseline implementation uses the ZAP container and generates HTML/JSON reports.
+The infrastructure is version-controlled and executed through CI-driven workflows rather than relying on manually created cloud resources.
+# 🗄️ Terraform Remote State
 
-The scan can be configured with quality-gate thresholds for:
+Terraform state is stored in Amazon S3.
 
-- High findings
-- Medium findings
-- Low findings
+The current implementation uses S3-native locking:
 
-The current architecture scans the publicly reachable application surface through the frontend entry point because the frontend/ALB path is the Internet-facing boundary.
+```hcl
+use_lockfile = true
+```
 
-Conceptually:
+DynamoDB is not used for Terraform state locking in the current implementation.
+
+# ☸️ EKS Pod Capacity Engineering
+
+One of the practical engineering challenges was Kubernetes pod capacity on cost-conscious worker nodes.
+
+The platform evolved through:
 
 ```text
-Internet
-   ↓
-ALB
-   ↓
-afm-frontend-ui
-   ↓
-BFF / Internal APIs
-   ↓
-AFM Services
+Cost-conscious worker node
+          ↓
+Pod/IP capacity pressure
+          ↓
+VPC CNI Prefix Delegation
+          ↓
+Custom max-pods configuration
+          ↓
+Launch Template configuration
+          ↓
+Additional node capacity
+          ↓
+APA workload separation
 ```
-
-This avoids exposing backend services simply to perform external security testing.
 
 ---
 
-# 🔑 Secrets Management and Workload Identity
+# 🖥️ Worker Node Separation
 
-Sensitive values are not hard-coded into application source code or container images.
+The final environment uses separate worker capacity for APA.
 
-The platform uses:
+```text
+Amazon EKS
+    │
+    ├── Platform/Application Node
+    │       └── AFM workloads
+    │
+    └── APA Node
+            └── APA workload
+```
+
+APA introduces a Python/LLM-oriented workload in addition to the Java application and observability components. The separate worker capacity provides workload isolation and reduces resource contention.
+# 🔐 Secrets Management
+
+Sensitive application values are not hard-coded into source code or container images.
+
+The application secret flow is:
 
 ```text
 AWS Secrets Manager
-        │
-        ▼
+        ↓
 External Secrets
-        │
-        ▼
+        ↓
 Kubernetes Secret
-        │
-        ▼
+        ↓
 Application
 ```
 
-For AWS API access from Kubernetes workloads:
-
-```text
-Kubernetes Pod
-      ↓
-EKS Pod Identity
-      ↓
-IAM Role
-      ↓
-AWS API
-```
-
-This avoids embedding long-lived AWS access keys in the container.
-
-The authentication service uses AWS Secrets Manager for sensitive database and JWT-related secret material.
+The authentication service uses AWS Secrets Manager for sensitive database/JWT-related secret material.
 
 ---
 
-# 🟢 Blue-Green Deployment — Authentication Service
+# 🔑 Workload Identity — IRSA vs EKS Pod Identity
 
-`afm-auth-service` uses a Blue-Green deployment model.
+The project uses workload-specific AWS identity mechanisms.
+
+## AFM Authentication Service
 
 ```text
-                    Kubernetes Service
-                         │
-                         ▼
-                  Active Color
-                 ┌───────────────┐
-                 │ Blue OR Green  │
-                 └───────────────┘
-                    ▲         ▲
-                    │         │
-             Active Version  Idle Version
-                    │         │
-                 ┌───────┐  ┌───────┐
-                 │ Blue  │  │ Green │
-                 └───────┘  └───────┘
+afm-auth-service
+       ↓
+     IRSA
+       ↓
+    IAM Role
+       ↓
+AWS Secrets Manager / AWS APIs
 ```
 
-### Deployment flow
+IRSA is used for the authentication service because it requires AWS workload access as part of its database/Secrets Manager responsibilities.
 
-1. The pipeline determines the currently active color.
-2. The new image is deployed to the idle color.
-3. The idle workload is validated.
-4. Traffic is switched by changing the Kubernetes Service selector through the GitOps workflow.
-5. If a rollback is required, the previous Service selector can be restored.
+## APA
 
-The current traffic-switch operation is **not presented as an automatic production failover mechanism**. The project documents it as a controlled Blue-Green release process with explicit switch/rollback tooling.
+```text
+APA Pod
+   ↓
+EKS Pod Identity
+   ↓
+Dedicated IAM Role
+   ↓
+Read-only AWS APIs
+```
 
-This distinction is intentional: the portfolio demonstrates the deployment pattern without claiming production-grade automated release orchestration that is not currently implemented.
+APA uses EKS Pod Identity for its AWS read-only integrations.
+
+The two workloads therefore have distinct AWS identity paths aligned with their responsibilities, while avoiding long-lived static AWS access keys inside containers.
+# 🔐 Kubernetes RBAC for APA
+
+APA is intentionally not a Kubernetes administrator.
+
+```text
+APA Pod
+   ↓
+Kubernetes RBAC
+   ↓
+Read-only permissions
+   ↓
+Kubernetes API
+```
+
+Supported read operations include information such as:
+
+- Nodes
+- Pods
+- Deployments
+- Services
+- Namespaces
+- Events
+- Workload status
+
+The permission model is designed around the principle of least privilege.
+
+---
+
+# 🛡️ DevSecOps
+
+Security is integrated into both application and infrastructure delivery.
+
+## Application delivery
+
+```text
+Commit
+  ↓
+Pre-cleanup
+  ↓
+Maven Build / Test
+  ↓
+SonarQube
+  ↓
+Docker Build
+  ↓
+ECR
+  ↓
+Trivy Container Scan
+  ↓
+GitOps Update
+  ↓
+Argo CD Deployment
+  ↓
+OWASP ZAP
+  ↓
+Quality Gate
+```
+
+## Infrastructure delivery
+
+```text
+Terraform
+   ↓
+Validation
+   ↓
+Trivy IaC
+   ↓
+Terraform Plan
+   ↓
+Controlled Apply
+```
 
 ---
 
 # 🔄 GitOps with Argo CD
 
-AFM uses a pull-based GitOps deployment model.
+AFM v3 uses pull-based GitOps for Kubernetes desired state.
 
-Application CI/CD does not directly perform the final Kubernetes deployment.
-
-Instead:
+### Earlier approach
 
 ```text
-Developer Commit
-       ↓
+Developer
+   ↓
+kubectl apply
+   ↓
+Kubernetes
+```
+
+### AFM v3 approach
+
+```text
+Developer
+   ↓
 GitLab CI/CD
-       ↓
-Build / Security
-       ↓
-Docker Image
-       ↓
+   ↓
+Container Image
+   ↓
 Amazon ECR
-       ↓
-GitOps Repository Update
-       ↓
+   ↓
+GitOps Repository
+   ↓
 Argo CD
-       ↓
+   ↓
 Amazon EKS
 ```
 
-Argo CD continuously reconciles the desired Kubernetes state stored in Git with the running cluster.
+Argo CD provides the deployment control plane for:
 
-### GitOps benefits demonstrated
-
-- Declarative Kubernetes configuration
-- Version-controlled desired state
+- Declarative Kubernetes deployment
+- Git as the desired-state source
 - Drift detection
-- Automated reconciliation
-- Reproducible deployments
-- Git-based rollback capability
+- Reconciliation
+- Deployment history
+- Git-based rollback
+- Separation between CI and CD
 
----
+The core responsibility boundary is:
 
+> **GitLab CI builds and publishes the artifact; Argo CD reconciles the Kubernetes desired state.**
+# 🟢 Blue-Green Deployment — Authentication Service
+
+`afm-auth-service` uses a controlled Blue-Green deployment model.
+
+```text
+                 Kubernetes Service
+                        │
+                        ▼
+                   Active Color
+                  ┌─────────────┐
+                  │ Blue/Green  │
+                  └─────────────┘
+                     ▲       ▲
+                     │       │
+                  Active    Idle
+                  Version   Version
+```
+
+Release flow:
+
+1. Determine active color.
+2. Deploy the new version to the idle color.
+3. Validate the idle workload.
+4. Switch the Kubernetes Service selector.
+5. Restore the previous selector if rollback is required.
+
+This is a controlled Blue-Green release pattern rather than an automated progressive-delivery system.
 # 📊 Observability
 
-AFM v3 implements centralized application, Kubernetes and AWS observability.
-
-## Application metrics
-
-Spring Boot Actuator and Micrometer expose application metrics.
-
-Prometheus scrapes the application metrics endpoints.
+The observability stack combines application, Kubernetes and AWS telemetry.
 
 ```text
-Spring Boot Application
-        │
-        ▼
+Spring Boot
+    ↓
 Actuator / Micrometer
-        │
-        ▼
+    ↓
 Prometheus
-        │
-        ├──────────────► Grafana
-        │
-        └──────────────► Alertmanager
-                               │
-                               ▼
-                             Slack
+    ├──────────────► Grafana
+    │
+    └──────────────► Alertmanager
+                           ↓
+                         Slack
 ```
 
-Common endpoints include:
+AWS metrics:
 
 ```text
-/actuator/health
-/actuator/prometheus
+AWS / CloudWatch
+       ↓
+      YACE
+       ↓
+   Prometheus
+       ↓
+    Grafana
 ```
 
-## Grafana
-
-The platform includes dashboards for:
-
-- AFM application services
-- Kubernetes workloads
-- EKS nodes
-- ALB
-- RDS PostgreSQL
-- SRE-oriented metrics
-- Platform operations
-
-The SRE dashboard includes metrics such as:
-
-- Request rate
-- Success rate
-- 4xx rate
-- 5xx rate
-- Error rate
-- Latency
-- p95/p99 latency
-- SLA-oriented views
-- Error-budget-oriented views
-
-## AWS metrics through YACE
-
-YACE exports selected CloudWatch metrics into Prometheus.
-
-The current monitoring configuration includes AWS/RDS and ALB-related metrics such as:
-
-- RDS CPU utilization
-- RDS database connections
-- RDS free storage
-- RDS freeable memory
-- RDS read/write IOPS
-- RDS read/write latency
-- ALB target health
-- ALB response/latency metrics
-
-This allows AWS infrastructure and Kubernetes/application metrics to be viewed through Grafana.
-
 ---
 
-# 🚨 Alerting
+# 🧠 APA — AFM Platform Assistant
 
-Prometheus alert rules are used for application and platform conditions.
+**APA = AFM Platform Assistant**
 
-Alertmanager handles alert routing.
+APA was introduced as the final evolution of the platform.
 
-Slack is used as an operational notification channel.
+It provides a natural-language interface over:
 
-Conceptually:
+1. Static AFM engineering knowledge
+2. Current Kubernetes state
+3. Current AWS infrastructure state
 
-```text
-Metrics
-   ↓
-Prometheus
-   ↓
-PrometheusRule
-   ↓
-Alertmanager
-   ↓
-Slack
-```
-
-The platform includes custom rules for AFM service health and infrastructure conditions.
-
----
-
-# 🧱 Kubernetes Architecture
-
-AFM workloads run on Amazon EKS.
-
-The platform uses Kubernetes resources such as:
-
-- Deployments
-- Services
-- Ingress
-- ConfigMaps
-- Secrets
-- Readiness probes
-- Liveness probes
-- ReplicaSets generated by Deployments
-- Blue-Green workload resources for authentication
-
-Persistent storage is used where required by platform components such as observability; it is **not claimed as a persistence requirement for every AFM microservice**.
-
-Horizontal Pod Autoscaling is **not presented as a core AFM v3 feature** in this README because the current portfolio platform is intentionally focused on cost-conscious, controlled EKS capacity.
-
----
-
-# 📡 Observability Architecture
-
-```text
-AFM Services
-     │
-     ▼
-Spring Boot Actuator
-     │
-     ▼
-Prometheus
-     │
-     ├───────────────► Grafana
-     │
-     └───────────────► Alertmanager
-                              │
-                              ▼
-                            Slack
-
-AWS CloudWatch
-     │
-     ▼
-    YACE
-     │
-     ▼
-Prometheus
-     │
-     ▼
-Grafana
-```
-
-Platform observability components include:
-
-- Prometheus
-- Grafana
-- Alertmanager
-- Prometheus Operator / kube-prometheus-stack
-- YACE
-- CloudWatch
-- Spring Boot Actuator
-- Micrometer
-- Custom Prometheus rules
-- Slack notifications
-
----
-
-# 🧰 Technology Stack
-
-## Application
-
-- Java 17
-- Spring Boot 3.3.11
-- Spring Security
-- Spring MVC
-- Spring Data JPA / Hibernate
-- PostgreSQL
-- JWT
-- BCrypt
-- Maven
-
-## Cloud
-
-- AWS
-- Amazon EKS
-- Amazon EC2
-- Amazon RDS PostgreSQL
-- Amazon ECR
-- Amazon S3
-- AWS Secrets Manager
-- IAM
-- EKS Pod Identity
-- Route 53
-- ACM
-- Application Load Balancer
-- NAT Instance
-- CloudWatch
-
-## DevOps / GitOps
-
-- GitLab CI/CD
-- Docker
-- Terraform
-- Argo CD
-- Kubernetes
-
-## Security
-
-- SonarQube
-- Trivy
-- Trivy IaC
-- OWASP ZAP
-- Kubernetes RBAC
-- IAM
-- AWS Secrets Manager
-- External Secrets
-
-## Observability
-
-- Prometheus
-- Grafana
-- Alertmanager
-- YACE
-- CloudWatch
-- Slack
-
-## AI / RAG
-
-- Python
-- Streamlit
-- OpenAI API
-- GPT-4o-mini
-- RAG
-- Embeddings
-- ChromaDB
-- Kubernetes API
-- AWS SDK / Boto3
-- Ollama
-- Qwen
-
----
-
-# 🗂️ Repository Ecosystem
-
-AFM v3 separates infrastructure, desired state, application services and AI components.
-
-```text
-                         AFM v3
-                           │
-        ┌──────────────────┼────────────────────┐
-        │                  │                    │
-        ▼                  ▼                    ▼
-    afm-infra          afm-gitops          AFM Services
-        │                  │                    │
-        ▼                  ▼                    ▼
-    Terraform           Argo CD         GitLab CI/CD → ECR
-        │                  │                    │
-        └──────────────────┼────────────────────┘
-                           ▼
-                         EKS
-                           │
-                    ┌──────┴──────┐
-                    ▼             ▼
-                 AFM Apps        APA
-                                  │
-                         ┌────────┴────────┐
-                         ▼                 ▼
-                  APA Application    APA Knowledge Base
-```
-
-| Repository | Responsibility |
-|---|---|
-| `afm-infra` | Terraform AWS/EKS infrastructure |
-| `afm-gitops` | Kubernetes desired state and Argo CD configuration |
-| `afm-auth-service` | Core authentication and identity service |
-| `afm-login-service` | Login gateway |
-| `afm-registration-service` | Registration gateway |
-| `afm-frontend-ui` | Frontend and BFF |
-| APA application repository | Streamlit application, query routing, RAG and dynamic integrations |
-| APA knowledge-base repository | Static RAG documentation and knowledge content |
-
----
-
-# 📁 Project Structure
-
-The portfolio repository contains documentation and evidence around the separate platform repositories.
-
-```text
-AFM v3 Portfolio
-├── README.md
-├── diagrams/
-├── pipeline-docs/
-├── screenshots/
-│   └── afm-project/
-└── Project-documents/
-```
-
-The application repositories follow their own service-specific structures containing:
-
-```text
-src/
-scripts/
-Dockerfile
-.gitlab-ci.yml
-```
-
-The infrastructure and GitOps repositories are maintained independently.
-
----
-
-# 🧠 AI Platform Operations — APA
-
-## AFM Platform Assistant
-
-**APA (AFM Platform Assistant)** is the AI-powered operations layer added to AFM v3.
-
-APA provides a natural-language interface over:
-
-1. AFM's static engineering knowledge.
-2. Current Kubernetes information.
-3. Current AWS infrastructure information.
-
-The key design principle is:
+The most important architectural principle is:
 
 > **APA is strictly read-only.**
 
-It is an information and analysis assistant, not an infrastructure remediation engine.
+APA is an information and analysis assistant, not an infrastructure remediation engine.
 
-### APA can
+---
+
+# 🚫 APA Safety Boundary
+
+APA can:
 
 - Retrieve AFM documentation
-- Retrieve relevant runbooks and troubleshooting knowledge
-- Inspect current Kubernetes state through approved read-only APIs
-- Inspect current AWS state through approved read-only APIs
+- Retrieve runbooks
+- Retrieve troubleshooting knowledge
+- Inspect Kubernetes state
+- Inspect AWS state
 - Combine retrieved evidence
 - Explain current platform conditions
-- Help engineers troubleshoot operational questions
+- Assist with operational troubleshooting
 
-### APA cannot
+APA cannot:
 
 - Apply Terraform
 - Patch Kubernetes resources
@@ -1126,13 +903,11 @@ It is an information and analysis assistant, not an infrastructure remediation e
 - Execute infrastructure-changing commands
 - Perform autonomous remediation
 
-This separation is deliberate and forms part of APA's security boundary.
+This boundary is deliberate.
 
 ---
 
 # 🧠 APA Architecture
-
-APA combines **static RAG** and **dynamic infrastructure retrieval**.
 
 ```text
                          User Question
@@ -1145,40 +920,35 @@ APA combines **static RAG** and **dynamic infrastructure retrieval**.
                          /           \
                         /             \
                    STATIC           DYNAMIC
-                      │                 │
-                      ▼                 ├───────────────┐
-                 RAG Retrieval          │               │
-                      │                 ▼               ▼
-                      ▼            Kubernetes        AWS Client
-                   ChromaDB           Client              │
-                      │                 │                  │
-                      │                 ▼                  ▼
-                      │              EKS API            AWS APIs
-                      │                 │                  │
-                      └────────┬────────┴──────────────────┘
-                               ▼
-                        Retrieved Evidence
-                               │
-                               ▼
-                         Query / Context
-                               │
-                               ▼
-                          OpenAI API
-                               │
-                               ▼
-                          GPT-4o-mini
-                               │
-                               ▼
-                       Grounded Response
+                     │                 │
+                     ▼                 ├──────────────┐
+                 RAG / KB              │              │
+                     │                 ▼              ▼
+                 ChromaDB         Kubernetes        AWS
+                     │                 │              │
+                     │              K8s API         Boto3
+                     │                 │              │
+                     └────────┬────────┴──────────────┘
+                              ▼
+                       Retrieved Evidence
+                              │
+                              ▼
+                         OpenAI API
+                              │
+                              ▼
+                         Grounded Answer
 ```
 
-The router separates questions that can be answered from the knowledge base from questions that require current platform state.
+The router decides whether the question requires:
+
+- static project knowledge
+- current Kubernetes state
+- current AWS state
+- or a combination of retrieved evidence
 
 ---
 
-# 📚 APA Static RAG
-
-The static knowledge path uses Retrieval-Augmented Generation.
+# 📚 Static RAG
 
 ```text
 AFM Documentation
@@ -1197,12 +967,10 @@ Relevant Context
        ↓
 OpenAI API
        ↓
-GPT-4o-mini
-       ↓
 Grounded Answer
 ```
 
-The knowledge base contains AFM platform information such as:
+The knowledge base contains:
 
 - Architecture
 - Repositories
@@ -1216,39 +984,22 @@ The knowledge base contains AFM platform information such as:
 - Troubleshooting
 - Operational runbooks
 
-The knowledge base is maintained separately from the APA application so documentation can evolve without coupling it to runtime application code.
+The knowledge base is maintained separately from the APA application so engineering documentation can evolve independently from the runtime.
+# ☁️ Dynamic AWS Access
 
----
-
-# ☁️ APA Dynamic Infrastructure Access
-
-When a question requires current state, APA uses controlled read-only integrations.
-
-## Kubernetes
-
-The Kubernetes integration can retrieve supported information such as:
-
-- Nodes
-- Pods
-- Deployments
-- Services
-- Namespaces
-- Events
-- Workload status
+APA uses Boto3 for approved read-only AWS operations.
 
 ```text
 APA
  ↓
-Read-only Kubernetes Client
+Boto3
  ↓
-Kubernetes API
+AWS APIs
  ↓
-Current EKS State
+Current Infrastructure State
 ```
 
-## AWS
-
-The AWS integration uses the AWS SDK/Boto3 to retrieve supported information from services such as:
+Supported information can include:
 
 - EKS
 - EC2
@@ -1261,274 +1012,802 @@ The AWS integration uses the AWS SDK/Boto3 to retrieve supported information fro
 - NAT infrastructure
 - Security groups
 
+The AWS API surface is deliberately restricted.
+
+---
+
+# ☸️ Dynamic Kubernetes Access
+
 ```text
 APA
  ↓
-AWS SDK / Boto3
+Read-only Kubernetes Client
  ↓
-AWS APIs
- ↓
-Current AWS State
-```
-
-The exact API surface is intentionally restricted to approved read-only operations.
-
----
-
-# 🔐 APA Security Model
-
-## Kubernetes authorization
-
-```text
-APA Pod
-   ↓
-Kubernetes RBAC
-   ↓
-Read-only permissions
-   ↓
 Kubernetes API
+ ↓
+Current EKS State
 ```
 
-APA does not receive broad Kubernetes administrator permissions.
-
-## AWS authorization
-
-```text
-APA Pod
-   ↓
-EKS Pod Identity
-   ↓
-IAM Role
-   ↓
-Least-Privilege Read Permissions
-   ↓
-AWS APIs
-```
-
-APA does not require long-lived AWS access keys inside the container.
-
-The AWS IAM policy should expose only the read operations required by the supported APA tools.
-
----
-
-# 🚀 APA Deployment and Delivery
-
-APA is maintained as a separate application repository and follows the same GitLab CI/CD and GitOps principles as the rest of AFM.
-
-```text
-APA Repository
-      ↓
-GitLab CI/CD
-      ↓
-Build / Validation
-      ↓
-Docker Image
-      ↓
-Amazon ECR
-      ↓
-GitOps Repository
-      ↓
-Argo CD
-      ↓
-Amazon EKS
-      ↓
-APA Pod
-```
-
-APA runs on dedicated EKS worker capacity.
-
-The OpenAI API credential is supplied securely at runtime and is not embedded into source code or the Docker image.
+This allows APA to answer questions about the current cluster instead of relying only on stale documentation.
 
 ---
 
 # 🧬 APA Evolution
 
-APA was developed in two major stages.
-
 ## Stage 1 — Local Static APA
 
-The initial implementation was a local RAG application using Ollama and Qwen.
+The initial implementation was local:
 
 ```text
 Streamlit
-    ↓
+   ↓
 RAG
-    ↓
+   ↓
 Embeddings
-    ↓
+   ↓
 ChromaDB
-    ↓
+   ↓
 Ollama
-    ↓
+   ↓
 Qwen
-    ↓
+   ↓
 Answer
 ```
 
-This stage established the retrieval, vector-store and AI application foundation.
+This stage established the RAG and vector-retrieval foundation.
 
-## Stage 2 — EKS-hosted Dynamic APA
+## Stage 2 — Dynamic APA on EKS
 
-The final AFM v3 implementation moved LLM inference to the OpenAI API and introduced controlled live infrastructure access.
+The final implementation evolved into:
 
 ```text
 Streamlit
-    ↓
+   ↓
 Query Router
-    ↓
- ┌───────────────┬──────────────────┐
- │               │                  │
-Static RAG     Kubernetes          AWS
- │               │                  │
-ChromaDB       K8s API            Boto3
- │               │                  │
- └───────────────┴──────────────────┘
-                 ↓
-          Retrieved Evidence
-                 ↓
-            OpenAI API
-                 ↓
-            GPT-4o-mini
-                 ↓
-          Grounded Response
+   ├── Static RAG → ChromaDB
+   ├── Kubernetes → K8s API
+   └── AWS → Boto3
+              ↓
+       Retrieved Evidence
+              ↓
+         OpenAI API
+              ↓
+          GPT-4o-mini
+              ↓
+       Grounded Response
 ```
 
-The current AFM v3 APA implementation is treated as the **read-only baseline/final phase of the platform**.
+The final APA is therefore not simply a chatbot.
+
+It is a **read-only platform information and analysis layer**.
 
 ---
 
-# 🧭 APA's Role in the AFM Operations Stack
+# 🔄 APA vs Existing Operations Tools
 
-APA does not replace the existing observability and deployment tools.
+APA does not replace the platform's operational systems.
 
-Instead, each tool has a distinct role:
-
-| Tool | Primary role |
+| Component | Primary responsibility |
 |---|---|
-| Prometheus | Metrics collection and alert evaluation |
-| Grafana | Visualization and dashboards |
-| Alertmanager | Alert routing and notifications |
-| Slack | Operational notification channel |
-| Argo CD | GitOps reconciliation and deployment |
 | Kubernetes | Workload orchestration |
+| Argo CD | GitOps reconciliation/deployment |
+| Prometheus | Metrics and alert evaluation |
+| Grafana | Visualization |
+| Alertmanager | Alert routing |
+| Slack | Operational notification |
 | AWS | Infrastructure platform |
-| APA | Natural-language retrieval and explanation of platform knowledge/current read-only state |
+| APA | Natural-language retrieval and explanation |
 
-For example:
+Example:
 
 ```text
-Prometheus detects an alert
-        ↓
-Alertmanager routes it
-        ↓
-Slack notifies the engineer
-        ↓
+Prometheus detects condition
+          ↓
+Alertmanager routes alert
+          ↓
+Slack notifies engineer
+          ↓
 Engineer asks APA for context
-        ↓
-APA retrieves relevant runbook + current state
-        ↓
-APA explains the observed condition
+          ↓
+APA retrieves runbook + current state
+          ↓
+APA explains the condition
 ```
 
-APA therefore acts as an additional **engineering interface**, not as a replacement for the underlying observability or deployment systems.
+APA is therefore an **additional engineering interface**, not a replacement for the underlying operational systems.
 
 ---
 
-# 🧪 Operational Challenges and Engineering Decisions
+# 🧰 Technology Stack, Tools & AWS Services
 
-AFM v3 evolved through practical engineering problems rather than being designed only as a static architecture diagram.
+The platform combines application engineering, AWS infrastructure, Kubernetes, CI/CD, GitOps, DevSecOps, observability and AI-assisted read-only operations.
 
-## Kubernetes pod capacity
+## Application stack
 
-The selected cost-conscious EKS worker size created pod-capacity pressure.
+| Technology | Purpose |
+|---|---|
+| Java 17 | Application runtime |
+| Spring Boot 3.3.11 | Application framework and REST services |
+| Spring Security | Authentication/security integration |
+| Spring Data JPA / Hibernate | Relational persistence |
+| PostgreSQL | Application database |
+| JWT | Authentication token model |
+| BCrypt | Password hashing |
+| Maven | Build and dependency management |
+| Executable JAR | Container-ready application artifact |
+| Docker | Application packaging |
 
-The platform was improved through:
+## AWS services
 
-- VPC CNI prefix delegation
-- Custom max-pods configuration
-- Worker-node launch-template configuration
+| AWS service | Purpose in AFM v3 |
+|---|---|
+| Amazon VPC | Network boundary and subnet architecture |
+| Amazon EC2 | EKS worker capacity and supporting infrastructure |
+| Amazon EKS | Managed Kubernetes control plane |
+| Amazon RDS PostgreSQL | Managed relational database |
+| Amazon ECR | Container image registry |
+| Amazon S3 | Terraform remote state and ALB log storage |
+| AWS Secrets Manager | Sensitive secret storage |
+| IAM | AWS authorization |
+| EKS Pod Identity | APA workload-to-IAM identity |
+| IRSA | AFM authentication workload identity |
+| Route 53 | DNS |
+| ACM | TLS certificate management |
+| Application Load Balancer | Public HTTP/HTTPS ingress |
+| CloudWatch | AWS infrastructure telemetry |
+
+## Infrastructure and platform tools
+
+| Tool | Purpose |
+|---|---|
+| Terraform | Infrastructure as Code |
+| Terraform Modules | Reusable infrastructure components |
+| GitLab | Source control and CI/CD |
+| Docker | Container build |
+| Kubernetes | Workload orchestration |
+| Argo CD | GitOps reconciliation |
+| AWS Load Balancer Controller | Kubernetes-to-ALB integration |
+| External Secrets | AWS Secrets Manager to Kubernetes integration |
+
+## Security tools
+
+| Tool | Purpose |
+|---|---|
+| SonarQube | Static code quality/security analysis |
+| Trivy | Container vulnerability scanning |
+| Trivy IaC | Terraform configuration scanning |
+| OWASP ZAP | Dynamic application security testing |
+| IAM | AWS access control |
+| Kubernetes RBAC | Kubernetes access control |
+| IRSA | Workload-specific AWS credentials |
+| EKS Pod Identity | Workload-specific AWS access |
+| AWS Secrets Manager | Managed secret storage |
+
+## Observability and SRE tools
+
+| Tool | Purpose |
+|---|---|
+| Spring Boot Actuator | Application health and metrics |
+| Micrometer | Application metrics instrumentation |
+| Prometheus | Metrics collection and alert-rule evaluation |
+| Grafana | Dashboards and SRE views |
+| Alertmanager | Alert routing |
+| YACE | CloudWatch metrics into Prometheus |
+| CloudWatch | AWS telemetry |
+| Slack | Operational notifications |
+
+## AI / platform operations
+
+| Technology | Purpose |
+|---|---|
+| Python | APA runtime |
+| Streamlit | APA user interface |
+| RAG | Project-specific knowledge retrieval |
+| Embeddings | Semantic document retrieval |
+| ChromaDB | Vector storage |
+| OpenAI API | LLM inference |
+| GPT-4o-mini | Cost-conscious production APA model |
+| Kubernetes API | Current EKS read-only state |
+| Boto3 | Current AWS read-only state |
+| Ollama | Local model development |
+| Qwen | Initial local APA model |
+
+# 🗂️ Repository Ecosystem
+
+AFM v3 uses separate repositories for infrastructure, Kubernetes desired state, application services and AI components. This separation keeps infrastructure, deployment configuration, application code and AI knowledge independently versioned.
+
+```text
+AFM v3 Portfolio
+│
+├── afm-infra
+│      └── Terraform / AWS / EKS
+│
+├── afm-gitops
+│      └── Kubernetes desired state / Argo CD
+│
+├── afm-auth-service
+│      └── Authentication / JWT / persistence
+│
+├── afm-login-service
+│      └── Login gateway
+│
+├── afm-registration-service
+│      └── Registration gateway
+│
+├── afm-frontend-ui
+│      └── UI / BFF
+│
+├── APA application
+│      └── Streamlit / RAG / dynamic read-only access
+│
+└── APA knowledge base
+       └── AFM documentation / RAG content
+```
+
+| Repository / Component | Responsibility |
+|---|---|
+| `afm-infra` | Terraform-managed AWS/EKS infrastructure |
+| `afm-gitops` | Kubernetes desired state and Argo CD configuration |
+| `afm-auth-service` | Core identity/authentication service |
+| `afm-login-service` | Login gateway |
+| `afm-registration-service` | Registration gateway |
+| `afm-frontend-ui` | Frontend and BFF |
+| APA application | Streamlit application, routing, RAG and dynamic integrations |
+| APA knowledge base | Static AFM knowledge and documentation |
+
+---
+
+# 🔄 CI/CD Separation
+
+The platform deliberately separates different delivery concerns.
+
+## Application CI/CD
+
+Builds and validates application artifacts.
+
+```text
+Source
+ ↓
+Maven
+ ↓
+SonarQube
+ ↓
+Docker
+ ↓
+Trivy
+ ↓
+ECR
+ ↓
+GitOps Update
+```
+
+## Infrastructure CI/CD
+
+Manages AWS infrastructure.
+
+```text
+Terraform
+ ↓
+Validation
+ ↓
+Trivy IaC
+ ↓
+Plan
+ ↓
+Controlled Apply
+```
+
+## GitOps
+
+Manages Kubernetes desired state.
+
+```text
+Git
+ ↓
+Argo CD
+ ↓
+EKS
+```
+
+## APA
+
+Uses the same platform delivery principles while maintaining a separate AI workload and knowledge lifecycle.
+
+---
+
+# 🔁 Complete CI/CD + Infrastructure + GitOps Lifecycle
+
+AFM v3 separates three related delivery planes: **application CI/CD**, **infrastructure CI/CD**, and **Kubernetes GitOps**.
+
+## Application CI/CD lifecycle
+
+```text
+Developer Commit
+      ↓
+GitLab Pipeline
+      ↓
+Pre-cleanup
+      ↓
+Maven Build
+      ↓
+Unit Tests
+      ↓
+SonarQube Analysis
+      ↓
+Docker Image Build
+      ↓
+Trivy Container Scan
+      ↓
+Amazon ECR
+      ↓
+GitOps Repository Update
+      ↓
+Argo CD Reconciliation
+      ↓
+Amazon EKS
+      ↓
+OWASP ZAP Baseline Scan
+      ↓
+ZAP Quality Gate
+```
+
+Each stage has a distinct responsibility:
+
+| Stage | Responsibility | Output |
+|---|---|---|
+| Pre-cleanup | Prepare the runner/workspace | Clean pipeline execution context |
+| Maven | Compile and package Java application | Executable JAR |
+| Unit tests | Validate application behavior | Test results |
+| SonarQube | Static quality/security analysis | Analysis results |
+| Docker | Package the application | Container image |
+| Trivy | Scan image vulnerabilities | Security report / gate |
+| ECR | Store immutable container artifact | Registry image |
+| GitOps update | Update desired deployment state | Git commit |
+| Argo CD | Reconcile Git state to EKS | Running workload |
+| ZAP | Test the deployed HTTP surface | HTML/JSON reports |
+| Quality gate | Apply configurable vulnerability thresholds | Pass/fail decision |
+
+## Infrastructure CI/CD lifecycle
+
+```text
+Terraform Source
+      ↓
+GitLab Infrastructure Pipeline
+      ↓
+Terraform Format / Validation
+      ↓
+Trivy IaC
+      ↓
+Terraform Plan
+      ↓
+Controlled Apply
+      ↓
+AWS
+      ↓
+VPC / EKS / RDS / IAM / ECR / ALB / Secrets
+```
+
+The infrastructure pipeline treats Terraform as the source of truth for AWS resources and performs security validation before provisioning.
+
+## GitOps reconciliation lifecycle
+
+```text
+Application Repository
+      ↓
+CI builds artifact
+      ↓
+Image published to ECR
+      ↓
+GitOps repository receives desired image/version
+      ↓
+Argo CD detects Git change
+      ↓
+Argo CD compares desired vs live state
+      ↓
+Argo CD synchronizes Kubernetes resources
+      ↓
+EKS runs the declared workload
+      ↓
+Prometheus / Grafana observe the result
+```
+
+This creates a clear separation:
+
+- **CI** produces and validates artifacts.
+- **Git** stores the desired Kubernetes state.
+- **Argo CD** performs reconciliation.
+- **Kubernetes** runs workloads.
+- **Observability** verifies runtime behavior.
+- **APA** can explain current state without modifying it.
+
+## Security lifecycle across delivery
+
+```text
+Source
+  ↓
+SonarQube
+  ↓
+Container Build
+  ↓
+Trivy Container Scan
+  ↓
+ECR
+  ↓
+Deployment
+  ↓
+OWASP ZAP
+  ↓
+Runtime Monitoring
+```
+
+Infrastructure follows a parallel path:
+
+```text
+Terraform
+  ↓
+Trivy IaC
+  ↓
+Plan
+  ↓
+Controlled Apply
+  ↓
+AWS
+```
+
+This creates multiple validation points instead of relying on a single security scanner.
+
+---
+
+# 🧭 Operational Lifecycle / SRE Workflow
+
+AFM v3 treats observability as an operational feedback loop rather than a collection of dashboards.
+
+```text
+┌───────────────┐
+│    Deploy     │
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│    Observe    │
+│ Prometheus /  │
+│ Grafana / AWS │
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│    Detect     │
+│ PrometheusRule│
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│     Alert     │
+│ Alertmanager  │
+│    → Slack    │
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│  Investigate  │
+│ K8s / AWS /   │
+│ Grafana / Logs│
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│    Explain    │
+│      APA      │
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│   Remediate   │
+│ Engineer-led  │
+└───────┬───────┘
+        ↓
+┌───────────────┐
+│    Verify     │
+│ Metrics / SLO │
+└───────────────┘
+```
+
+### Observability responsibilities
+
+| Layer | Responsibility |
+|---|---|
+| Spring Boot Actuator / Micrometer | Application metrics |
+| Prometheus | Metrics collection and rule evaluation |
+| Grafana | Operational visualization |
+| Alertmanager | Alert grouping and routing |
+| Slack | Engineer notification |
+| YACE | CloudWatch-to-Prometheus integration |
+| CloudWatch | AWS service telemetry |
+| APA | Read-only context retrieval and explanation |
+| Engineer | Remediation and change execution |
+
+### SRE signals represented in the platform
+
+- Request rate
+- Success rate
+- 4xx rate
+- 5xx rate
+- Error rate
+- Latency
+- p95 latency
+- p99 latency
+- Service availability
+- SLA-oriented views
+- Error-budget-oriented views
+- Kubernetes workload health
+- EKS node health
+- RDS health and resource metrics
+- ALB target and response metrics
+
+The operational model is intentionally **human-controlled**: automation detects and informs, while infrastructure-changing actions remain under engineer control.
+
+# 🚧 Major Engineering Challenges
+
+AFM v3 evolved through practical engineering problems.
+
+## 1. EKS Pod Capacity
+
+The selected cost-conscious worker capacity created pod/IP pressure.
+
+Resolution:
+
+- VPC CNI Prefix Delegation
+- Custom `max-pods`
+- Launch Template configuration
 - Additional node capacity
-- Workload separation for APA
+- APA workload separation
 
-## Prometheus Operator CRDs
+---
+
+## 2. EKS Provisioning / Dependency Timing
+
+Cluster-dependent resources and addons introduced provisioning-order challenges.
+
+The project required careful dependency and lifecycle handling between:
+
+```text
+Terraform
+   ↓
+EKS Cluster
+   ↓
+Cluster-dependent resources
+   ↓
+EKS Addons
+```
+
+This became an important infrastructure-engineering lesson around dependency ordering and AWS/EKS initialization behavior.
+
+Detailed implementation evidence belongs in the infrastructure decision/incident documentation.
+
+---
+
+## 3. Prometheus Operator CRDs
 
 Prometheus Operator CRDs created Argo CD synchronization challenges.
 
 The observability deployment was adjusted to control CRD installation and use compatible Argo CD synchronization behavior.
 
-## Infrastructure security
+This demonstrates that GitOps does not eliminate Kubernetes lifecycle problems; it changes how they must be managed.
 
-Security scanning was expanded beyond application/container scanning to Terraform configuration through Trivy IaC.
+---
 
-## Secrets and identity
+## 4. Secrets and Workload Identity
 
-The platform evolved toward AWS-native secret management and workload identity:
+The project evolved from application-level secret handling toward:
 
-- AWS Secrets Manager
-- External Secrets
-- EKS Pod Identity
-- IAM
-- Kubernetes RBAC
+```text
+AWS Secrets Manager
+        ↓
+External Secrets
+        ↓
+Kubernetes
+```
 
-## HTTPS and domain
+and workload identity through:
 
-The platform evolved from a basic application endpoint into a custom-domain architecture using:
+```text
+AFM Auth → IRSA
+APA      → EKS Pod Identity
+```
 
-- Route 53
-- ACM
-- HTTPS
-- ALB
+This reduced dependence on long-lived credentials.
+
+---
+
+## 5. Observability Evolution
+
+The observability stack evolved from basic application monitoring into:
+
+```text
+Application Metrics
+        +
+Kubernetes Metrics
+        +
+AWS / RDS Metrics
+        +
+ALB Metrics
+        ↓
+Prometheus
+        ↓
+Grafana
+        +
+Alertmanager
+        ↓
+Slack
+```
+
+The result is an operations-focused monitoring layer rather than simply a dashboard installation.
+
+---
+
+# 📈 AFM v2 → AFM v3 Evolution
+
+One of the most important architectural changes was the move from manually operated deployment toward GitOps.
+
+### Earlier model
+
+```text
+Developer
+   ↓
+Manual kubectl operations
+   ↓
+Kubernetes
+```
+
+### AFM v3
+
+```text
+Developer
+   ↓
+GitLab CI/CD
+   ↓
+Build + Security
+   ↓
+ECR
+   ↓
+GitOps Repository
+   ↓
+Argo CD
+   ↓
+EKS
+```
+
+This changed the platform from an application that could be deployed on Kubernetes into a more complete **GitOps-operated platform**.
+
+---
+
+# 🧬 Overall Platform Evolution
+
+```text
+                 AFM EVOLUTION
+                      │
+                      ▼
+          Application / Microservices
+                      │
+                      ▼
+                GitLab CI/CD
+                      │
+                      ▼
+                 Docker/ECR
+                      │
+                      ▼
+              Terraform / AWS
+                      │
+                      ▼
+                  Amazon EKS
+                      │
+                      ▼
+                 RDS PostgreSQL
+                      │
+                      ▼
+              HTTPS / ALB / ACM
+                      │
+                      ▼
+                DevSecOps
+                      │
+                      ▼
+                Argo CD GitOps
+                      │
+                      ▼
+             Observability / SRE
+                      │
+                      ▼
+              Static APA / RAG
+                      │
+                      ▼
+          Dynamic APA on EKS
+                      │
+                      ▼
+       AWS + Kubernetes Read-only
+```
+
+---
+
+# 📐 Architecture Principles
+
+## Infrastructure as Code
+
+AWS infrastructure is managed through Terraform.
 
 ## GitOps
 
-Application delivery evolved into a pull-based GitOps model where Git remains the source of truth for Kubernetes desired state.
+Kubernetes desired state is maintained in Git and reconciled by Argo CD.
 
-## AI operations
+## Least Privilege
 
-APA evolved from a local static RAG implementation into an EKS-hosted OpenAI-powered assistant with controlled live AWS and Kubernetes read-only integrations.
+IAM and Kubernetes RBAC restrict workload access.
+
+## Secure Secrets
+
+Sensitive values are managed through AWS Secrets Manager rather than hard-coded into source code or images.
+
+## Workload Identity
+
+AWS access is provided through workload identity rather than long-lived access keys.
+
+## Shift-Left Security
+
+Security validation is integrated into application and infrastructure delivery.
+
+## Immutable Artifacts
+
+Container images are built and stored in Amazon ECR.
+
+## Centralized Observability
+
+Prometheus and Grafana provide centralized metrics and visualization.
+
+## Cost Awareness
+
+The development environment is intentionally cost-conscious and can be destroyed when not required.
+
+## Read-Only AI Operations
+
+APA is intentionally prevented from modifying infrastructure or workloads.
 
 ---
 
 # 📸 Portfolio Evidence
 
-The repository should contain visual evidence supporting the claims made in this README.
+The repository provides visual and operational evidence for the AFM v3 platform.
 
-## Architecture evidence
+## Architecture
 
 `diagrams/`
 
-Recommended evidence includes:
+Recommended diagrams:
 
 - Overall AWS architecture
-- Application architecture
+- AFM application architecture
 - Terraform lifecycle
-- CI/CD pipeline
+- CI/CD architecture
 - GitOps flow
-- Observability architecture
 - Security architecture
+- Observability architecture
 - APA architecture
 - APA static/dynamic workflow
 
-## Pipeline evidence
+## Pipeline Evidence
 
 `pipeline-docs/`
 
-Recommended evidence includes:
+Recommended evidence:
 
 - Infrastructure pipeline
 - Application pipeline
 - Observability pipeline
 - APA pipeline
+- Security scanning stages
+- GitOps deployment flow
 
-## Screenshot evidence
+## Screenshots
 
 `screenshots/afm-project/`
 
-Recommended screenshots include:
+Recommended evidence:
 
 - AWS infrastructure
 - EKS
-- GitLab CI/CD
+- GitLab pipelines
 - Argo CD
 - Prometheus
 - Grafana
@@ -1538,95 +1817,28 @@ Recommended screenshots include:
 - Trivy
 - OWASP ZAP
 - APA UI
-- APA dynamic Kubernetes/AWS responses
-
-## Project documentation
-
-`Project-documents/`
-
-Contains the detailed project documentation and supporting material used to build the platform knowledge base.
-
----
-
-# 🧮 Portfolio Metrics
-
-Rather than hard-coding potentially changing repository/resource counts into this README, the portfolio focuses on the architecture and capabilities that can be verified from the repositories and screenshots.
-
-The current platform includes:
-
-- 4 AFM application components
-- A separate APA application
-- A separate APA knowledge base
-- Multiple Terraform modules
-- Multiple GitLab CI/CD pipelines
-- Amazon ECR image repositories
-- Amazon EKS workloads
-- Prometheus/Grafana/Alertmanager/YACE observability
-- Multiple DevSecOps controls
-- AWS-managed services across networking, compute, database, identity, storage and monitoring
-
----
-
-# 🧭 Architecture Principles
-
-AFM v3 follows these engineering principles:
-
-### Infrastructure as Code
-
-AWS infrastructure is managed through Terraform.
-
-### GitOps
-
-Kubernetes desired state is maintained in Git and reconciled by Argo CD.
-
-### Least Privilege
-
-AWS IAM and Kubernetes RBAC are used to restrict access.
-
-### Secure Secrets
-
-Sensitive credentials are managed through AWS Secrets Manager rather than being hard-coded into source code or images.
-
-### Workload Identity
-
-EKS Pod Identity provides AWS credentials to supported workloads without embedding long-lived access keys.
-
-### Shift-Left Security
-
-Security validation is integrated into application and infrastructure pipelines.
-
-### Immutable Artifacts
-
-Application images are built and stored in Amazon ECR and referenced by versioned image tags.
-
-### Centralized Observability
-
-Prometheus and Grafana provide centralized metrics and visualization, with Alertmanager/Slack handling notifications.
-
-### Cost Awareness
-
-The platform uses cost-conscious AWS resources and can destroy ephemeral infrastructure when it is not required.
-
-### Read-Only AI Operations
-
-APA is intentionally designed without infrastructure mutation or remediation capabilities.
+- APA Kubernetes read-only response
+- APA AWS read-only response
 
 ---
 
 # ⚠️ Known Limitations
 
-AFM v3 is a production-inspired portfolio project and is **not a production banking deployment**.
+AFM v3 is a **production-inspired portfolio platform**, not a production deployment or production financial system.
 
 Current limitations include:
 
-- Refresh-token rotation and explicit token revocation/blacklisting are not implemented.
-- Proxy services do not currently implement advanced circuit-breaker/fallback patterns such as Resilience4j.
-- Blue-Green traffic switching is a controlled release process rather than a fully automated production progressive-delivery system.
+- Refresh-token rotation/revocation is not implemented.
+- Proxy services do not currently implement advanced resilience patterns such as circuit breakers.
+- Blue-Green switching is controlled rather than fully automated progressive delivery.
 - Internal service-to-service traffic currently uses HTTP.
-- mTLS/service-mesh capabilities are not implemented.
+- mTLS/service mesh is not implemented.
 - Distributed tracing is not currently implemented.
-- Infrastructure is intentionally cost-conscious and not designed as a multi-AZ production banking environment.
-- APA is strictly read-only and does not perform autonomous remediation.
+- The infrastructure is intentionally cost-conscious rather than a multi-AZ production architecture.
+- APA is strictly read-only.
+- APA does not perform autonomous remediation.
+
+These limitations are intentionally documented rather than hidden.
 
 ---
 
@@ -1634,16 +1846,16 @@ Current limitations include:
 
 Potential future enhancements include:
 
-- OAuth2 / OIDC integration
+- OAuth2 / OIDC
 - Refresh-token rotation and revocation
 - OpenTelemetry distributed tracing
-- Automated Blue-Green traffic evaluation
+- Automated Blue-Green evaluation
 - Progressive delivery based on Prometheus metrics
 - Service mesh and mTLS
 - Additional resilience patterns
 - Expanded SRE automation
 - Additional read-only APA tools
-- Further AI-assisted operational workflows while preserving the read-only safety boundary
+- Additional AI-assisted operational workflows while preserving the read-only security boundary
 
 ---
 
@@ -1651,7 +1863,7 @@ Potential future enhancements include:
 
 ## Cloud / Platform Engineering
 
-`AWS` · `VPC` · `EKS` · `EC2` · `RDS` · `ECR` · `S3` · `ALB` · `ACM` · `Route 53` · `Secrets Manager` · `IAM`
+`AWS` · `VPC` · `EC2` · `EKS` · `RDS` · `ECR` · `S3` · `ALB` · `ACM` · `Route 53` · `Secrets Manager` · `IAM`
 
 ## Infrastructure as Code
 
@@ -1663,11 +1875,11 @@ Potential future enhancements include:
 
 ## DevSecOps
 
-`SonarQube` · `Trivy` · `Trivy IaC` · `OWASP ZAP` · `IAM` · `Kubernetes RBAC` · `EKS Pod Identity` · `AWS Secrets Manager`
+`SonarQube` · `Trivy` · `Trivy IaC` · `OWASP ZAP` · `IAM` · `IRSA` · `EKS Pod Identity` · `Kubernetes RBAC` · `AWS Secrets Manager`
 
-## Observability
+## Observability / SRE
 
-`Prometheus` · `Grafana` · `Alertmanager` · `YACE` · `CloudWatch` · `Slack` · `Micrometer`
+`Prometheus` · `Grafana` · `Alertmanager` · `YACE` · `CloudWatch` · `Micrometer` · `Spring Boot Actuator` · `Slack`
 
 ## Application Engineering
 
@@ -1675,74 +1887,561 @@ Potential future enhancements include:
 
 ## AI / Platform Operations
 
-`Python` · `Streamlit` · `RAG` · `Embeddings` · `ChromaDB` · `OpenAI API` · `GPT-4o-mini` · `Kubernetes API` · `AWS SDK/Boto3` · `Ollama` · `Qwen`
+`Python` · `Streamlit` · `RAG` · `Embeddings` · `ChromaDB` · `OpenAI API` · `GPT-4o-mini` · `Kubernetes API` · `Boto3` · `Ollama` · `Qwen`
 
 ---
 
-# 🏁 Final Takeaway
+# 📚 Documentation Structure
 
-AFM v3 demonstrates the evolution of a cloud-native application platform into a GitOps-operated DevSecOps environment with integrated security, observability and AI-assisted platform operations.
+The root README is the **executive portfolio entry point**.
 
-The platform combines:
+Detailed engineering evidence should live under:
 
 ```text
-Terraform
-   +
-AWS
-   +
-Amazon EKS
-   +
-GitLab CI/CD
-   +
-DevSecOps
-   +
-Argo CD / GitOps
-   +
-Prometheus / Grafana
-   +
-AWS Managed Services
-   +
-Microservices
-   +
-AI / RAG
-   +
-Read-Only Platform Operations
+docs/
+├── architecture/
+│   ├── architecture-overview.md
+│   ├── application-architecture.md
+│   ├── aws-architecture.md
+│   └── networking.md
+│
+├── engineering-decisions/
+│   ├── application-stack.md
+│   ├── aws-services.md
+│   ├── terraform.md
+│   ├── cicd.md
+│   ├── eks.md
+│   ├── gitops.md
+│   ├── security.md
+│   ├── observability.md
+│   └── apa.md
+│
+├── evolution/
+│   └── afm-v2-to-v3.md
+│
+└── incidents/
+    ├── eks-capacity.md
+    ├── eks-race-condition.md
+    └── secrets.md
 ```
 
-The **AFM Platform Assistant (APA)** adds a natural-language interface over AFM platform knowledge and current read-only AWS and Kubernetes information.
+The detailed documents answer the deeper:
 
-APA complements existing operational systems such as Prometheus, Grafana, Alertmanager, Argo CD and Kubernetes. It does not replace them and does not perform infrastructure-changing operations.
+> **What implementation rationale, alternatives, failure analysis and accepted constraints are documented?**
 
-The result is a single portfolio project demonstrating:
+The root README answers:
 
-- Cloud infrastructure engineering
-- Infrastructure as Code
-- Kubernetes/EKS
-- CI/CD
-- DevSecOps
-- GitOps
-- Observability
-- Security and workload identity
-- Microservice deployment
-- AI/RAG
-- Read-only AI-assisted platform operations
+> **What is AFM v3, how did it evolve, and what engineering capability does it demonstrate?**
 
 ---
 
-# 👨‍💻 Portfolio
+# 🏁 Final Project Summary
 
-**Swapnil Gavhale**
+AFM v3 evolved from a simple application/microservice project into a complete cloud-native **DevOps, DevSecOps, GitOps and platform engineering environment**.
 
-DevOps / Cloud / Platform Engineering
+```text
+Application Engineering
+        +
+Terraform / AWS
+        +
+Amazon EKS
+        +
+GitLab CI/CD
+        +
+Docker / ECR
+        +
+DevSecOps
+        +
+Argo CD / GitOps
+        +
+Prometheus / Grafana
+        +
+SRE Practices
+        +
+AI / RAG
+        +
+Read-only Platform Operations
+```
 
-`AWS` · `Terraform` · `Kubernetes` · `EKS` · `GitLab CI/CD` · `Docker` · `Argo CD` · `GitOps` · `DevSecOps` · `Prometheus` · `Grafana` · `RAG` · `LLM` · `AI Platform Operations`
+The platform demonstrates an end-to-end workflow:
+
+1. Application source is maintained in Git.
+2. CI pipelines build, test and scan application code.
+3. Docker images are built and published to ECR.
+4. Terraform provisions the AWS platform.
+5. Kubernetes desired state is maintained in the GitOps repository.
+6. Argo CD reconciles that desired state into EKS.
+7. Prometheus, Grafana, Alertmanager and YACE provide operational visibility.
+8. Security controls run across application, infrastructure and deployed workload stages.
+9. APA provides a natural-language, read-only interface over project knowledge and current AWS/Kubernetes state.
+
+The reference application makes the platform concrete, but the primary engineering focus is the **platform lifecycle and the systems around it**.
 
 ---
 
 ## Documentation Metadata
 
-- **Documentation:** AFM v3 Portfolio Root README
-- **Platform Version:** `3.0.0`
-- **Current phase:** AFM v3 + read-only APA
+- **Project:** AFM v3 — GitOps DevSecOps Cloud Platform
+- **AFM meaning:** Application / Feature / Microservice
+- **Reference/demo application:** AFM Bank
+- **Platform version:** `3.0.0`
+- **Current phase:** AFM v3 + read-only Dynamic APA
+- **Domain:** `afmcloud.in`
+- **Documentation:** Portfolio Root README
 - **Last reviewed:** August 2026
-- **Maintainer:** Swapnil Gavhale
+
+# 🧭 Engineering Decisions & Trade-offs
+
+The preceding sections describe the **actual AFM v3 project**: its architecture, application components, infrastructure, CI/CD, GitOps process, security, observability, APA implementation, operational model, challenges, limitations and roadmap.
+
+This section intentionally comes **after the project description**.
+
+It contains the deeper engineering rationale: why a technology or pattern was selected, alternatives considered, and trade-offs accepted.
+
+---
+
+## 🔐 Why Does Only `afm-auth-service` Own the Database?
+
+The authentication service is the owner of identity-related persistence.
+
+The other services do not directly connect to PostgreSQL.
+
+```text
+Login Service ───────┐
+                     │
+Registration Service ┤
+                     ▼
+                Auth Service
+                     │
+                     ▼
+                PostgreSQL
+```
+
+This was chosen to avoid database coupling between multiple services.
+
+### Benefits
+
+- Clear data ownership
+- Centralized persistence logic
+- Reduced schema coupling
+- Easier evolution of authentication data
+- Smaller database security surface
+
+### Trade-off
+
+The authentication service becomes a central dependency.
+
+For this reference application, this provides a useful service boundary without creating unnecessary microservice fragmentation.
+
+---
+
+## 🖥️ Why a Spring Boot UI/BFF Instead of React?
+
+React could have been used.
+
+A React SPA could have been used. The selected UI/BFF approach keeps the application intentionally small so that the project can focus on backend, cloud, DevOps and platform engineering.
+
+A Spring Boot-based UI/BFF provides:
+
+- A realistic web application
+- A public ingress path
+- Backend proxy capabilities
+- A smaller frontend technology footprint
+- Less infrastructure/application complexity
+
+### Trade-off
+
+A React/SPA architecture would provide a richer frontend development model and stronger separation between frontend and backend.
+
+The chosen approach keeps the project focused on platform engineering.
+
+---
+
+## ☕ Application Technology Decisions
+
+| Technology | Why selected | Trade-off |
+|---|---|---|
+| Java 17 | LTS runtime and modern enterprise baseline | Higher resource footprint than some lightweight runtimes |
+| Spring Boot | Mature enterprise Java framework with REST, security, persistence and Actuator support | More framework/runtime overhead |
+| Spring Security | Standard security integration for Spring applications | Requires framework configuration and security knowledge |
+| Spring Data JPA / Hibernate | Relational persistence abstraction | ORM complexity and potential query/performance issues |
+| PostgreSQL | Mature relational database suitable for identity/application data | More operational complexity than a local embedded database |
+| JWT | Stateless authentication mechanism suitable for distributed services | Token revocation is more difficult without additional infrastructure |
+| BCrypt | Password hashing designed for password storage | Computationally more expensive by design |
+| Maven | Conventional Java build lifecycle and strong Spring integration | More verbose/conventional than some alternatives |
+| Docker | Consistent application packaging and runtime | Adds image lifecycle and security responsibilities |
+| Executable JAR | Self-contained application artifact suited to containers | Less appropriate for environments standardized around external application servers |
+
+---
+
+## 🏗️ Why AWS?
+
+AWS was selected because the project is intended to demonstrate practical cloud/platform engineering using managed cloud primitives.
+
+### Benefits
+
+- Mature managed Kubernetes through EKS
+- Native IAM integration
+- Managed database through RDS
+- Managed container registry through ECR
+- Integrated networking
+- Managed TLS
+- Cloud-native observability integrations
+
+### Trade-off
+
+The platform is intentionally AWS-oriented and therefore carries cloud-provider dependency and AWS-specific operational knowledge requirements.
+
+### Design note
+
+AWS is the chosen cloud implementation, so the platform is intentionally AWS-oriented rather than cloud-neutral. This allows deeper use of native EKS, IAM, RDS, ECR, ALB and CloudWatch integrations.
+
+---
+
+## ☸️ Why Amazon EKS?
+
+EKS was selected instead of running Kubernetes directly on EC2 because the project is intended to demonstrate managed Kubernetes operations.
+
+### Why EKS?
+
+- Managed Kubernetes control plane
+- Native AWS IAM integration
+- VPC networking
+- ECR integration
+- Load Balancer Controller integration
+- Kubernetes workload orchestration
+- Realistic cloud platform model
+
+### Trade-off
+
+EKS introduces:
+
+- AWS dependency
+- Additional platform components
+- Networking complexity
+- Node/pod capacity management
+- Additional cost
+
+For this project, the operational learning value justified that complexity.
+
+---
+
+## 🔎 Security Tool Decisions
+
+| Tool | Why used | Trade-off |
+|---|---|---|
+| SonarQube | Static code quality/security analysis | Adds analysis infrastructure and pipeline time |
+| Trivy | Lightweight container vulnerability scanning | Vulnerability results require interpretation and remediation |
+| Trivy IaC | Scans Terraform configuration before provisioning | Adds another validation stage |
+| OWASP ZAP | Dynamic security validation against deployed application | Runs after deployment and adds pipeline duration |
+| AWS Secrets Manager | Managed sensitive secret storage | AWS dependency and additional service cost |
+| External Secrets | Bridges AWS-managed secrets into Kubernetes | Adds another controller/component |
+| IAM | AWS authorization boundary | IAM policy design can be complex |
+| Kubernetes RBAC | Kubernetes authorization | Requires careful permission management |
+| BCrypt | Secure password hashing | Computationally expensive by design |
+
+---
+
+## 🧪 Why OWASP ZAP Is Post-Deployment
+
+ZAP validates the **running application surface** rather than only source code or container contents.
+
+```text
+Internet
+   ↓
+ALB
+   ↓
+Frontend
+   ↓
+BFF
+   ↓
+Application Services
+```
+
+The current baseline scan generates HTML and JSON reports and supports configurable quality gates for High, Medium and Low findings.
+
+### Why this approach?
+
+The application must actually be deployed before dynamic behavior can be tested.
+
+### Trade-off
+
+The security scan occurs later in the delivery lifecycle than static analysis and can increase pipeline execution time.
+
+---
+
+## 📈 Why Prometheus?
+
+Prometheus provides:
+
+- Kubernetes-native metrics collection
+- PromQL
+- Alert rule evaluation
+- Integration with Grafana
+
+### Trade-off
+
+Prometheus introduces additional storage, configuration and operational responsibility.
+
+---
+
+## 📊 Why Grafana?
+
+Grafana provides the operational visualization layer.
+
+Dashboards cover:
+
+- AFM services
+- Kubernetes workloads
+- EKS nodes
+- ALB
+- RDS PostgreSQL
+- SRE metrics
+- Platform operations
+
+SRE-oriented dashboards include:
+
+- Request rate
+- Success rate
+- 4xx
+- 5xx
+- Error rate
+- Latency
+- p95
+- p99
+- SLA-oriented views
+- Error-budget-oriented views
+
+---
+
+## 🚨 Why Alertmanager and Slack?
+
+Dashboards require engineers to actively look at them.
+
+Alertmanager provides:
+
+- Alert routing
+- Grouping
+- Notification handling
+
+Slack provides an operational notification channel.
+
+```text
+Metric
+  ↓
+Prometheus
+  ↓
+PrometheusRule
+  ↓
+Alertmanager
+  ↓
+Slack
+  ↓
+Engineer
+```
+
+---
+
+## ☁️ Why YACE?
+
+CloudWatch already contains AWS infrastructure metrics.
+
+YACE was selected to expose selected CloudWatch metrics through the Prometheus ecosystem.
+
+This allows application, Kubernetes and AWS infrastructure metrics to be viewed together through Grafana.
+
+Examples include:
+
+- RDS CPU utilization
+- Database connections
+- Free storage
+- Freeable memory
+- Read/write IOPS
+- Read/write latency
+- ALB target health
+- ALB response/latency metrics
+
+### Trade-off
+
+YACE introduces another observability component, but provides a unified Prometheus/Grafana operational model.
+
+---
+
+## 🤖 Why RAG?
+
+A general-purpose LLM does not inherently know the internal architecture of AFM.
+
+RAG provides project-specific context before generating the response.
+
+### Benefits
+
+- Grounds answers in project documentation
+- Reduces dependence on model memory
+- Allows AFM-specific terminology
+- Makes runbooks searchable
+- Separates knowledge from model inference
+
+### Trade-off
+
+RAG adds:
+
+- Document processing
+- Embedding generation
+- Vector storage
+- Retrieval logic
+- Knowledge-base maintenance
+
+---
+
+## 🧠 APA Technology Decisions
+
+| Technology | Why selected | Trade-off |
+|---|---|---|
+| Python | Strong ecosystem for AI/RAG integrations | Different runtime from AFM Java services |
+| Streamlit | Fast, lightweight operational UI | Less control than a full frontend framework |
+| OpenAI API | Managed LLM inference | API cost and external dependency |
+| GPT-4o-mini | Cost/performance appropriate for the portfolio workload | Model capabilities differ from larger models |
+| ChromaDB | Lightweight vector store suitable for project-scale RAG | Not intended as a full enterprise-scale vector platform |
+| RAG | Grounds answers in AFM-specific knowledge | Requires ingestion and retrieval pipeline |
+| Kubernetes API | Current EKS state | Requires strict RBAC design |
+| Boto3 | Native AWS SDK access | Requires IAM policy design |
+| Query Router | Separates static knowledge from dynamic state | Adds routing logic and testing complexity |
+| EKS Pod Identity | AWS workload identity for APA | Requires EKS/IAM configuration |
+| Ollama + Qwen | Enabled local/offline development of the initial APA | Local model quality and hardware constraints |
+
+---
+
+## Additional Design Notes
+
+### Why a NAT Instance?
+
+A NAT Gateway is operationally simpler but has a higher baseline cost.
+
+A NAT Instance was selected for the portfolio environment because the project prioritizes cost awareness.
+
+### Trade-off
+
+NAT Instance:
+
+- Lower cost for this use case
+- More operational responsibility
+- Less resilient than managed NAT Gateway architecture
+
+### Why Route 53?
+
+Provides AWS-native DNS integration.
+
+### Why ACM?
+
+Provides managed certificate lifecycle.
+
+### Why ALB?
+
+Provides an AWS-native HTTP/HTTPS entry point and integrates with Kubernetes through the AWS Load Balancer Controller.
+
+### Trade-off
+
+The implementation is strongly AWS-integrated rather than cloud-neutral.
+
+### Why Terraform?
+
+Manual AWS provisioning would make the platform:
+
+- difficult to reproduce
+- difficult to review
+- difficult to destroy
+- difficult to evolve consistently
+
+Terraform provides:
+
+- Declarative infrastructure
+- Version-controlled infrastructure
+- Reproducible environments
+- Dependency management
+- Plan/apply workflow
+- Module reuse
+
+### Trade-off
+
+Terraform introduces:
+
+- State management
+- Module design
+- Dependency handling
+- Provider/version management
+- Terraform-specific debugging
+
+The trade-off is worthwhile because the platform must be recreated repeatedly.
+
+### Why Prefix Delegation?
+
+It increases available pod IP allocation capacity compared with relying only on individual secondary IP allocation.
+
+### Why custom `max-pods`?
+
+The default Kubernetes pod limit calculation does not necessarily represent the capacity available after the selected networking configuration.
+
+### Trade-off
+
+Increasing scheduling capacity does not magically increase CPU or memory.
+
+The configuration must therefore be matched with actual node resources and workload requirements.
+
+
+
+## 💰 Infrastructure Cost and Capacity Decisions
+
+| Decision | Rationale | Trade-off |
+|---|---|---|
+| Cost-conscious worker nodes | Keep portfolio infrastructure affordable | Lower compute headroom and resilience |
+| NAT Instance | Lower baseline cost for the development environment | More operational responsibility and lower resilience than NAT Gateway |
+| Ephemeral EKS | Avoid paying for an always-on development cluster | Environment is unavailable when destroyed |
+| Separate APA node | Isolate Python/LLM workload from Java/observability workloads | Additional worker cost |
+| VPC CNI Prefix Delegation | Increase available pod/IP capacity on cost-conscious nodes | Adds networking configuration complexity |
+| Custom `max-pods` | Align Kubernetes scheduling capacity with selected networking configuration | Requires capacity validation against real CPU/memory resources |
+
+## 🌐 AWS Edge and Networking Decisions
+
+| Technology | Why selected | Trade-off |
+|---|---|---|
+| Route 53 | AWS-native DNS integration | AWS dependency |
+| ACM | Managed certificate lifecycle | AWS dependency |
+| ALB | AWS-native HTTP/HTTPS entry point and Kubernetes integration | AWS-specific ingress model |
+| AWS Load Balancer Controller | Connects Kubernetes ingress resources to ALB | Additional controller lifecycle |
+| NAT Instance | Cost-conscious outbound connectivity for the portfolio environment | Less resilient and more operationally involved than NAT Gateway |
+
+## 🔑 Workload Identity Decisions
+
+| Workload | Mechanism | Why selected | Trade-off |
+|---|---|---|---|
+| `afm-auth-service` | IRSA | Supports AWS access required by authentication/Secrets Manager responsibilities | IAM and service-account configuration |
+| APA | EKS Pod Identity | Provides dedicated AWS identity for read-only platform integrations | Requires EKS/IAM configuration |
+| APA Kubernetes access | Kubernetes RBAC | Restricts APA to approved read-only resources | Requires careful permission design |
+
+## 🔄 GitOps Decision
+
+| Decision | Rationale | Trade-off |
+|---|---|---|
+| Argo CD + GitOps | Declarative desired state, reconciliation, drift detection and Git-based deployment history | Additional controller and GitOps repository |
+| CI/CD separation | CI produces artifacts while CD reconciles desired state | Requires coordination between application and GitOps repositories |
+| Controlled Blue-Green | Clear release/rollback model for authentication service | Requires temporary capacity for two versions and controlled selector changes |
+
+## Consolidated Decision Matrix
+
+| Area | Selected approach | Primary rationale | Main trade-off |
+|---|---|---|---|
+| Cloud | AWS | Managed cloud services and deep EKS integration | AWS dependency |
+| Infrastructure | Terraform | Reproducible, version-controlled infrastructure | State and module complexity |
+| Kubernetes | Amazon EKS | Managed Kubernetes with AWS integration | Platform complexity and cost |
+| CI | GitLab CI/CD | Pipeline-as-code and integrated delivery workflow | Runner infrastructure |
+| Containers | Docker + ECR | Consistent packaging and AWS-native registry | Image lifecycle/security overhead |
+| CD | Argo CD GitOps | Declarative desired state and reconciliation | Additional controller/repository |
+| Application | Java 17 + Spring Boot | Mature application framework and LTS runtime | Runtime/resource overhead |
+| Database | PostgreSQL + RDS | Managed relational persistence | Database/AWS dependency |
+| Secrets | Secrets Manager + External Secrets | Managed secret storage and Kubernetes integration | Additional components |
+| Identity | IRSA + EKS Pod Identity | Workload-specific AWS access without long-lived keys | IAM/EKS configuration |
+| Security | SonarQube + Trivy + ZAP | Multiple layers of application/IaC/runtime validation | Pipeline time and finding triage |
+| Observability | Prometheus + Grafana + Alertmanager + YACE | Unified Kubernetes/application/AWS monitoring | Additional monitoring stack |
+| AI | RAG + OpenAI + dynamic AWS/Kubernetes reads | Project-grounded, current platform information | API cost and integration complexity |
+| APA security | Strictly read-only | Minimize operational blast radius | No autonomous remediation |
+| Infrastructure cost | Cost-conscious / ephemeral EKS | Suitable for portfolio development | Lower availability and resilience |
