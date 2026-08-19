@@ -97,6 +97,7 @@ Platform Add-ons / Argo CD Bootstrap
             ▼
     GitOps-Ready EKS Platform
 
+```
 ☁️ AWS Infrastructure Provisioned
 
 Networking
@@ -169,6 +170,8 @@ AFM / APA workloads	Ephemeral	Application runtime
 Then add:
 
 🔄 Cost-Aware Rebuild Model
+
+```
 Persistent Foundation
         │
         ├── VPC / Networking
@@ -197,6 +200,7 @@ Persistent Foundation
                  │
                  ▼
         Persistent Foundation Remains
+```
 
 ☸️ Amazon EKS Platform
 
@@ -214,6 +218,7 @@ The current architecture contains:
              │                       │
        namespace:               namespace:
         afm-bank             afm-platform-assistant
+        
 EKS Control Plane
 
 The Kubernetes control plane is managed by AWS.
@@ -230,7 +235,6 @@ Purpose: AFM application workloads
 Namespace: afm-bank
 
 Hosts workloads such as:
-
 frontend-ui
 login-service
 registration-service
@@ -244,6 +248,7 @@ Namespace: afm-platform-assistant
 Hosts the APA workload independently from AFM application workloads.
 
 This separation provides a clear workload boundary within the same EKS cluster.
+
 
 🔐 EKS Identity Architecture
 
@@ -266,10 +271,11 @@ Kubernetes ServiceAccount
         │
         ▼
    AWS Resources
+   
 APA Workload Identity — EKS Pod Identity
 
 APA uses a separate identity model:
-
+```
 APA Pod
    │
    ▼
@@ -283,7 +289,7 @@ APA Read-Only IAM Role
    │
    ▼
 AWS APIs / Resources
-
+```
 The APA role is restricted to read-only operational access.
 
 APA is not part of the infrastructure mutation path.
@@ -294,7 +300,7 @@ APA is not part of the infrastructure mutation path.
 Terraform is organized using a modular, layered structure.
 
 The following is a representative Terraform organization used to illustrate the project structure; exact module and environment paths should follow the current infrastructure repository:
-
+```
 afm-infra-provisioning/
 │
 ├── envs/
@@ -314,7 +320,7 @@ afm-infra-provisioning/
 ├── scripts/
 │
 └── .gitlab-ci.yml
-
+```
 The environment layer composes reusable modules and controls environment-specific configuration.
 
 🧱 Layered Terraform Provisioning
@@ -797,7 +803,8 @@ AWS Load Balancer Controller
 ExternalDNS
 Metrics Server
 External Secrets Operator
-🔁 Complete Infrastructure Lifecycle
+🔁 Complete Infrastructure Lifecycle:
+```
 Developer Commit
        │
        ▼
@@ -844,6 +851,7 @@ GitLab CI/CD
               │
               ▼
        AFM / APA Workloads
+```
 🚦 Supported Pipeline Actions
 
 The infrastructure pipeline supports controlled lifecycle actions such as:
