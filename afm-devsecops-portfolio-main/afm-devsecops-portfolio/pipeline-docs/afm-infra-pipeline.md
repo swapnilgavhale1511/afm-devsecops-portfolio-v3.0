@@ -1,4 +1,31 @@
 # 🏗️ AFM Infrastructure CI/CD Pipeline
+
+### Terraform-Driven AWS Infrastructure Provisioning via GitLab CI/CD
+
+The **AFM Infrastructure Pipeline** provisions, configures, validates, and destroys the AWS infrastructure and Kubernetes platform foundation required to run the AFM GitOps DevSecOps platform.
+
+Infrastructure is managed as **Infrastructure as Code (IaC)** using modular Terraform and executed through **GitLab CI/CD** rather than relying on local Terraform execution.
+
+The pipeline combines:
+
+**Terraform + GitLab CI/CD + Trivy IaC Security + AWS + Amazon EKS + Kubernetes Platform Add-ons**
+
+The result is a reproducible, auditable, security-validated infrastructure lifecycle that can be provisioned, operated, and destroyed in a controlled manner.
+
+---
+
+# 📌 Pipeline Scope
+
+The infrastructure pipeline is responsible for the platform foundation required before application GitOps delivery.
+
+It covers:
+
+- AWS networking
+- Routing and internet connectivity
+- Security groups and network controls
+- IAM roles and policies
+- Amazon ECR repositories
+- Route 53 and ACM resources
 - ALB access-log storage
 - AWS Secrets Manager foundations
 - Amazon RDS PostgreSQL
@@ -12,18 +39,13 @@
 - Argo CD platform bootstrap
 - Other Kubernetes platform components required by the AFM environment
 
-
 The application CI/CD pipelines remain separate from the infrastructure pipeline.
-
 
 ---
 
-
 # 🎯 Infrastructure Engineering Principles
 
-
 The AFM infrastructure lifecycle follows these principles:
-
 
 - **Infrastructure as Code** — AWS resources are defined in Terraform.
 - **Git-driven infrastructure changes** — Terraform configuration is stored in Git.
@@ -33,19 +55,16 @@ The AFM infrastructure lifecycle follows these principles:
 - **Human-controlled Apply** — infrastructure changes require controlled execution.
 - **Remote state** — Terraform state is stored centrally in Amazon S3.
 - **Native S3 state locking** — Terraform uses S3 native locking through `use_lockfile = true`.
-- **Least-privilege AWS access** — CI runners use IAM-based access rather than hardcoded AWS credentials.
+- **Least-privilege AWS access** — the CI runner authenticates to AWS through its IAM role rather than storing long-lived AWS access keys in the repository.
 - **Modular infrastructure** — infrastructure is divided into reusable Terraform modules/layers.
 - **Dependency-aware provisioning** — infrastructure is created in dependency order.
 - **Reverse-order destruction** — resources are destroyed in an order that respects dependencies.
 - **Cost-aware operation** — temporary development infrastructure can be destroyed when not required.
 - **Environment-ready design** — the Terraform structure supports expansion toward multiple environments.
 
-
 ---
 
-
 # 🏛️ High-Level Infrastructure Lifecycle
-
 
 ```text
 Developer
@@ -56,13 +75,15 @@ GitLab Infrastructure Repository
     ▼
 GitLab CI/CD
     │
+    ├── Pre-flight Checks
+    ├── Terraform Init
     ├── Terraform Validate
     ├── Terraform Format Check
     ├── Trivy IaC Scan
     ├── Terraform Plan
     ├── Manual Approval
     ├── Terraform Apply
-    └── Post-Apply Summary
+    └── Post-Apply Outputs
             │
             ▼
      AWS Infrastructure
@@ -71,15 +92,10 @@ GitLab CI/CD
       Amazon EKS Platform
             │
             ▼
- Kubernetes Platform Add-ons
+Platform Add-ons / Argo CD Bootstrap
             │
             ▼
-      GitOps-Ready Platform
-            │
-            ▼
-       Argo CD / App Delivery
-
-The infrastructure pipeline therefore prepares the platform, while application repositories and GitOps control application deployment.
+    GitOps-Ready EKS Platform
 
 ☁️ AWS Infrastructure Provisioned
 Networking
@@ -136,8 +152,8 @@ The current architecture contains:
              ┌───────────┴───────────┐
              │                       │
              ▼                       ▼
-     AFM Worker Node          APA Worker Node
-        t3.medium                 t3.medium
+      AFM Worker Node          APA Worker Node
+         t3.medium                t3.medium
              │                       │
        namespace:               namespace:
         afm-bank             afm-platform-assistant
@@ -149,7 +165,7 @@ Terraform provisions the EKS cluster configuration and associated AWS resources 
 
 Dedicated Worker Nodes
 
-Two dedicated worker nodes are used:
+Two dedicated worker nodes are used.
 
 AFM Worker Node
 Instance class: t3.medium
@@ -176,6 +192,8 @@ This separation provides a clear workload boundary within the same EKS cluster.
 
 The infrastructure layer establishes the IAM and Kubernetes identity foundation required by platform workloads.
 
+AFM Workload Identity — IRSA
+
 AFM workloads use the established IRSA model where AWS workload access is required:
 
 Kubernetes ServiceAccount
@@ -184,13 +202,14 @@ Kubernetes ServiceAccount
        IRSA
         │
         ▼
-OIDC Provider
+   OIDC Provider
         │
         ▼
-     IAM Role
+      IAM Role
         │
         ▼
    AWS Resources
+APA Workload Identity — EKS Pod Identity
 
 APA uses a separate identity model:
 
@@ -212,11 +231,12 @@ The APA role is restricted to read-only operational access.
 
 APA is not part of the infrastructure mutation path.
 
+
 🧩 Terraform Architecture
 
 Terraform is organized using a modular, layered structure.
 
-A representative structure is:
+The following is a representative Terraform organization used to illustrate the project structure; exact module and environment paths should follow the current infrastructure repository:
 
 afm-infra-provisioning/
 │
@@ -278,7 +298,7 @@ use_lockfile = true
 
 Terraform therefore uses S3 native locking rather than the legacy DynamoDB locking pattern.
 
-Why this matters
+Remote State Characteristics
 
 Remote state provides:
 
@@ -314,9 +334,26 @@ Purpose:
 
 Fail early when the CI environment is not ready.
 
-2. Terraform Validate
+2. Terraform Init
 
-Terraform configuration is validated before any infrastructure change.
+Terraform initializes the working directory and remote backend.
+
+Responsibilities include:
+
+Backend initialization
+Provider installation
+Module initialization
+Dependency preparation
+
+Example:
+
+terraform init
+
+The remote S3 backend is initialized before validation, scanning, planning, or applying infrastructure.
+
+3. Terraform Validate
+
+Terraform configuration is validated before infrastructure changes are planned.
 
 Checks include:
 
@@ -333,9 +370,9 @@ terraform validate
 
 Purpose:
 
-Catch configuration errors before security scanning and planning.
+Catch configuration errors early before security scanning and planning.
 
-3. Terraform Format Check
+4. Terraform Format Check
 
 Terraform formatting is validated to maintain consistent HCL structure.
 
@@ -349,7 +386,7 @@ Consistent configuration style
 Cleaner code review
 Reduced formatting noise
 Standardized Terraform repositories
-4. Trivy IaC Security Scan
+5. Trivy IaC Security Scan
 
 Terraform configuration is scanned using Trivy IaC before infrastructure provisioning.
 
@@ -371,7 +408,7 @@ JSON
 
 A configurable quality gate can stop the pipeline when findings exceed the accepted severity threshold.
 
-Security position
+Security Position
 Terraform Code
       │
       ▼
@@ -386,23 +423,6 @@ Plan     Pipeline Stops
 
 This places infrastructure security validation before Terraform changes reach AWS.
 
-5. Terraform Init
-
-Terraform initializes the working directory and remote backend.
-
-Responsibilities include:
-
-Backend initialization
-Provider installation
-Module initialization
-Dependency preparation
-
-Example:
-
-terraform init
-
-The remote S3 backend is initialized before planning or applying infrastructure.
-
 6. Terraform Plan
 
 Terraform generates an execution plan showing the intended infrastructure changes.
@@ -416,11 +436,11 @@ Resources to modify
 Resources to destroy
 Configuration changes
 Dependency resolution
-Infrastructure drift relative to Terraform state
+Infrastructure state differences
 
 The generated plan can be preserved as a CI artifact.
 
-Important principle
+Important Principle
 
 Plan is read-only.
 
@@ -489,6 +509,8 @@ Observability components
 External Secrets Operator
 other environment-specific Helm releases
 
+The Application Load Balancer is created and managed by the AWS Load Balancer Controller from Kubernetes Ingress resources; Terraform provisions the supporting platform prerequisites rather than treating the runtime ALB as a static Terraform-managed application resource.
+
 The goal is to produce a:
 
 GitOps-ready Amazon EKS platform
@@ -510,7 +532,7 @@ AWS + EKS Platform Ready
 Cluster Endpoint / IDs / IAM Outputs
         │
         ▼
-GitOps/Application Pipelines
+GitOps / Application Pipelines
         │
         ▼
 Argo CD
@@ -518,9 +540,9 @@ Argo CD
         ▼
 Amazon EKS Workloads
 
-This provides a clean separation:
+This provides a clean separation.
 
-Infrastructure pipeline
+Infrastructure Pipeline
 
 Responsible for:
 
@@ -531,14 +553,15 @@ IAM
 RDS
 secrets foundations
 platform add-ons
-Application/GitOps pipeline
+Argo CD/platform bootstrap
+Application / GitOps Pipeline
 
 Responsible for:
 
 application source
 container image
 security scans
-ECR
+ECR image publishing
 Kubernetes manifests
 GitOps desired state
 Argo CD synchronization
@@ -594,9 +617,9 @@ Network Dependencies
         ↓
 NAT / Route Tables / Subnets / VPC
 
-The exact destruction order is handled according to Terraform resource dependencies.
+The exact destruction order is ultimately governed by Terraform's dependency graph.
 
-Why reverse dependency order matters
+Why Reverse Dependency Order Matters
 
 Destroying foundational resources too early can break dependent resources or produce unnecessary failures.
 
@@ -671,9 +694,9 @@ These outputs are exposed through controlled Terraform outputs/artifacts where r
 
 The Terraform implementation is structured to support environment expansion.
 
-The project is not limited to a hardcoded single environment model.
+The project is not limited to a hardcoded single-environment model.
 
-The structure is designed to support patterns such as:
+A representative environment pattern is:
 
 environments/
 ├── dev/
@@ -726,13 +749,13 @@ GitLab CI/CD
        │
        ├── Pre-flight Checks
        │
+       ├── Terraform Init
+       │
        ├── Terraform Validate
        │
        ├── Terraform Format Check
        │
        ├── Trivy IaC Scan
-       │
-       ├── Terraform Init
        │
        ├── Terraform Plan
        │
@@ -743,19 +766,19 @@ GitLab CI/CD
        └── Post-Apply Outputs
               │
               ▼
-      AWS Infrastructure
+       AWS Infrastructure
               │
               ▼
-       Amazon EKS Ready
+        Amazon EKS Ready
               │
               ▼
-      Platform Add-ons Ready
+  Platform Add-ons / Argo CD Bootstrap
               │
               ▼
-          GitOps Ready
+       GitOps-Ready Platform
               │
               ▼
-       Application Pipelines
+      Application Pipelines
               │
               ▼
             Argo CD
@@ -803,9 +826,9 @@ GitOps-Ready
 
 The infrastructure pipeline prepares the EKS platform for subsequent Argo CD-based workload deployment.
 
-AI-Ready
+APA Platform Support
 
-The infrastructure layer provides the platform on which the APA read-only operations workload runs.
+The infrastructure provisions the Amazon EKS platform and workload identity required to host the read-only APA operations workload.
 
 APA remains outside the infrastructure mutation path.
 
@@ -848,6 +871,7 @@ Argo CD reconciles that desired state with EKS.
 
 APA provides read-only operational intelligence over approved platform evidence.
 
+
 🧠 What This Demonstrates
 
 The AFM Infrastructure Pipeline demonstrates more than basic Terraform execution.
@@ -868,7 +892,7 @@ Controlled infrastructure changes
 Dependency-aware destruction
 Cost-aware development operations
 Clear separation between infrastructure and application delivery
-GitOps-ready Kubernetes platform engineering
+GitOps-ready Kubernetes platform
 🔚 Final Takeaway
 
 The AFM Infrastructure Pipeline treats AWS infrastructure as version-controlled, security-validated, CI/CD-managed infrastructure rather than a manually configured environment. Terraform defines the desired infrastructure, GitLab CI/CD provides the controlled execution mechanism, Trivy validates infrastructure security before provisioning, Amazon S3 provides remote state and native locking, and the resulting Amazon EKS platform becomes the foundation for GitOps-based application delivery and the read-only APA operations workload.
