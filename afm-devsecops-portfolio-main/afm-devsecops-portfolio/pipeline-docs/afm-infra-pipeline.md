@@ -98,6 +98,7 @@ Platform Add-ons / Argo CD Bootstrap
     GitOps-Ready EKS Platform
 
 ☁️ AWS Infrastructure Provisioned
+
 Networking
 
 The AFM environment uses a custom VPC:
@@ -140,6 +141,62 @@ Network ACLs
 subnet relationships
 
 The development environment uses a NAT Instance (t3.micro) rather than a NAT Gateway as a cost-conscious architecture choice.
+
+🧱 Infrastructure Lifecycle Classification
+
+The AFM infrastructure is intentionally divided into persistent foundation resources and ephemeral platform resources. This separation supports cost-aware development while keeping foundational services available across EKS rebuild cycles.
+
+Resource	Lifecycle	Purpose
+VPC	Persistent	Core networking foundation
+Public/Private Subnets	Persistent	Network placement
+Route Tables	Persistent	Network routing
+Internet Gateway	Persistent	Internet connectivity
+NAT Instance	Persistent	Private-subnet egress
+Route 53	Persistent	DNS
+ACM Certificate	Persistent	TLS certificate
+S3 Terraform State	Persistent	Terraform remote state
+S3 ALB Logs	Persistent	ALB access-log storage
+Amazon ECR	Persistent	Container image registry
+AWS Secrets Manager	Persistent	Application/platform secrets
+RDS PostgreSQL	Persistent	Application database
+IAM foundation	Persistent	Core AWS access control
+Amazon EKS Cluster	Ephemeral	Kubernetes platform
+EKS Worker Nodes	Ephemeral	AFM / APA runtime
+Kubernetes Add-ons	Ephemeral	Platform services
+Argo CD	Ephemeral	GitOps controller
+AFM / APA workloads	Ephemeral	Application runtime
+
+Then add:
+
+🔄 Cost-Aware Rebuild Model
+Persistent Foundation
+        │
+        ├── VPC / Networking
+        ├── RDS
+        ├── ECR
+        ├── S3
+        ├── Route 53
+        ├── ACM
+        ├── Secrets Manager
+        └── IAM
+                 │
+                 ▼
+         Provision Ephemeral Platform
+                 │
+                 ├── EKS
+                 ├── 2 × t3.medium nodes
+                 ├── Platform Add-ons
+                 ├── Argo CD
+                 └── AFM / APA workloads
+                 │
+                 ▼
+             Use / Test
+                 │
+                 ▼
+        Destroy Ephemeral Platform
+                 │
+                 ▼
+        Persistent Foundation Remains
 
 ☸️ Amazon EKS Platform
 
@@ -317,7 +374,7 @@ The Terraform lifecycle is executed by GitLab CI/CD.
 
 The pipeline runs on the project's shared/self-managed GitLab runner infrastructure.
 
-Pipeline Stages
+Infrastructure Pipeline Workflow
 1. Pre-flight Validation
 
 The pipeline validates the execution environment before running Terraform.
@@ -629,9 +686,11 @@ Terraform's dependency graph determines the actual execution order.
 
 AFM is operated as a cost-aware development environment.
 
-Some foundational resources may remain available while short-lived platform components are created and destroyed as required.
+The project intentionally keeps selected foundational AWS resources persistent while treating the EKS cluster, worker nodes, Kubernetes add-ons, and workloads as ephemeral development resources that can be destroyed and recreated to control cost.
 
 For development/testing, the platform can be rebuilt using the infrastructure pipeline rather than keeping the full EKS environment permanently running.
+
+Normal development teardown targets the ephemeral EKS platform and associated runtime resources. Persistent foundation resources such as VPC, RDS, ECR, S3, Route 53, ACM, Secrets Manager and selected IAM resources are retained unless a full infrastructure teardown is intentionally executed.
 
 This allows:
 
