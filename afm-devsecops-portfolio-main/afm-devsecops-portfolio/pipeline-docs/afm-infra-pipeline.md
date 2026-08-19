@@ -43,6 +43,7 @@ The application CI/CD pipelines remain separate from the infrastructure pipeline
 
 ---
 
+
 # 🎯 Infrastructure Engineering Principles
 
 The AFM infrastructure lifecycle follows these principles:
@@ -63,6 +64,7 @@ The AFM infrastructure lifecycle follows these principles:
 - **Environment-ready design** — the Terraform structure supports expansion toward multiple environments.
 
 ---
+
 
 # 🏛️ High-Level Infrastructure Lifecycle
 
@@ -98,10 +100,11 @@ Platform Add-ons / Argo CD Bootstrap
     GitOps-Ready EKS Platform
 
 ```
+
+
 ☁️ AWS Infrastructure Provisioned
 
 Networking
-
 The AFM environment uses a custom VPC:
 ```
 VPC CIDR: 10.0.0.0/16
@@ -142,8 +145,8 @@ subnet relationships
 
 The development environment uses a NAT Instance (t3.micro) rather than a NAT Gateway as a cost-conscious architecture choice.
 
-🧱 Infrastructure Lifecycle Classification
 
+🧱 Infrastructure Lifecycle Classification
 The AFM infrastructure is intentionally divided into persistent foundation resources and ephemeral platform resources. This separation supports cost-aware development while keeping foundational services available across EKS rebuild cycles.
 
 | Resource                        | Lifecycle  | Purpose                      |
@@ -201,6 +204,7 @@ Persistent Foundation
         Persistent Foundation Remains
 ```
 
+
 ☸️ Amazon EKS Platform
 
 The infrastructure pipeline provisions the Amazon EKS cluster used by the AFM platform.
@@ -251,6 +255,7 @@ Hosts the APA workload independently from AFM application workloads.
 This separation provides a clear workload boundary within the same EKS cluster.
 
 
+
 🔐 EKS Identity Architecture
 
 The infrastructure layer establishes the IAM and Kubernetes identity foundation required by platform workloads.
@@ -297,6 +302,7 @@ The APA role is restricted to read-only operational access.
 APA is not part of the infrastructure mutation path.
 
 
+
 🧩 Terraform Architecture
 
 Terraform is organized using a modular, layered structure.
@@ -325,6 +331,7 @@ afm-infra-provisioning/
 ```
 The environment layer composes reusable modules and controls environment-specific configuration.
 
+
 🧱 Layered Terraform Provisioning
 
 The infrastructure is provisioned in dependency-aware layers rather than treating the entire AWS environment as one undifferentiated Terraform operation.
@@ -345,6 +352,7 @@ The major layers include:
 
 
 The exact layer composition can evolve with the environment, but the dependency-oriented model remains the governing principle.
+
 
 💾 Terraform Remote State
 
@@ -553,6 +561,7 @@ The goal is to produce a:
 GitOps-ready Amazon EKS platform
 rather than immediately mixing application deployment into infrastructure provisioning.
 
+
 🔄 Infrastructure → GitOps Handoff
 
 The infrastructure pipeline prepares the platform.
@@ -619,6 +628,7 @@ Argo CD synchronization
 
 This separation avoids coupling AWS infrastructure changes to ordinary application releases.
 
+
 💥 Destroy Workflow
 Infrastructure destruction is intentionally isolated from normal Apply operations.
 Supported actions include:
@@ -655,6 +665,7 @@ Why Reverse Dependency Order Matters
 Destroying foundational resources too early can break dependent resources or produce unnecessary failures.
 Terraform's dependency graph determines the actual execution order.
 
+
 💰 Cost-Aware Development Lifecycle
 AFM is operated as a cost-aware development environment.
 The project intentionally keeps selected foundational AWS resources persistent while treating the EKS cluster, worker nodes, Kubernetes add-ons, and workloads as ephemeral development resources that can be destroyed and recreated to control cost.
@@ -676,6 +687,7 @@ Observe
 Destroy temporary resources
 ```
 The strategy reduces unnecessary AWS consumption while preserving reproducibility.
+
 
 🔐 Security Controls in Infrastructure Provisioning
 Security is integrated into the infrastructure lifecycle rather than treated as a separate manual activity.
@@ -702,6 +714,7 @@ Kubernetes Secrets
 No application secrets stored in Git
 ``
 
+
 📊 Platform Outputs
 The infrastructure pipeline produces outputs consumed by subsequent platform/application workflows.
 Typical outputs include:
@@ -721,7 +734,6 @@ These outputs are exposed through controlled Terraform outputs/artifacts where r
 
 
 🧪 Development / Environment Readiness
-
 The Terraform implementation is structured to support environment expansion.
 The project is not limited to a hardcoded single-environment model.
 A representative environment pattern is:
@@ -815,23 +827,23 @@ GitLab CI/CD
               ▼
        AFM / APA Workloads
 ```
-🚦 Supported Pipeline Actions
 
+🚦 Supported Pipeline Actions
 The infrastructure pipeline supports controlled lifecycle actions such as:
 
-Action	Purpose
-plan	Preview infrastructure changes
-apply	Provision/update infrastructure
-destroy	Destroy selected infrastructure
-destroy-all	Full development environment teardown
+| Action        | Purpose                               |
+| ------------- | ------------------------------------- |
+| `plan`        | Preview infrastructure changes        |
+| `apply`       | Provision/update infrastructure       |
+| `destroy`     | Destroy selected infrastructure       |
+| `destroy-all` | Full development environment teardown |
+
 
 Every destructive action is deliberate and separately controlled.
 
-📌 Key Engineering Characteristics
+📌 Key Engineering Characteristics:
 Reproducible
-
 Infrastructure can be recreated from version-controlled Terraform configuration.
-
 Auditable
 Changes originate from Git and execute through GitLab CI/CD.
 Security-Checked
@@ -849,7 +861,6 @@ The infrastructure provisions the Amazon EKS platform and workload identity requ
 APA remains outside the infrastructure mutation path.
 
 🔗 Relationship with AFM Application and GitOps Pipelines
-
 The AFM platform is intentionally separated into infrastructure, application CI/CD, and GitOps responsibilities.
 
                     ┌─────────────────────────────┐
