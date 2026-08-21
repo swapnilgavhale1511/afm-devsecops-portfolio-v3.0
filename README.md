@@ -357,10 +357,10 @@ This evolution is a central part of the project rather than an afterthought.
                                Kubernetes Ingress
                                       │
                                       ▼
-                              ┌───────────────────┐
-                              │  afm-frontend-ui  │
-                              │      UI + BFF      │
-                              └─────────┬─────────┘
+                              ┌────────────────────┐
+                              │  afm-frontend-ui   │
+                              │ UI + Reverse Proxy │
+                              └─────────┬──────────┘
                                         │
                               ┌─────────┴─────────┐
                               │                   │
@@ -414,10 +414,10 @@ AFM Bank uses four application components.
 
 | Component | Role | Responsibility |
 |---|---|---|
-| `afm-frontend-ui` | UI + BFF | Public application entry point and browser-facing API layer |
-| `afm-registration-service` | Registration gateway | Handles registration-facing API workflow |
-| `afm-login-service` | Login gateway | Handles login-facing API workflow |
-| `afm-auth-service` | Identity core | Owns authentication, JWT handling, persistence and AWS secret access |
+| `afm-frontend-ui` | UI + Reverse Proxy | Serves the browser-facing UI and proxies frontend API requests to backend services |
+| `afm-registration-service` | Registration Service | Handles user registration workflow |
+| `afm-login-service` | Login Service | Handles user login workflow |
+| `afm-auth-service` | Authentication / Identity Service | Handles authentication, JWT processing, persistence and AWS Secrets Manager access |
 
 The resulting application flow is:
 
@@ -425,7 +425,8 @@ The resulting application flow is:
 Browser
    │
    ▼
-Frontend / BFF
+afm-frontend-ui
+(UI + Reverse Proxy)
    │
    ├──────────────► Registration Service
    │
@@ -1234,19 +1235,23 @@ AFM v3 Portfolio
 │      └── Authentication / JWT / persistence
 │
 ├── afm-login-service
-│      └── Login gateway
+│      └── Login service
 │
 ├── afm-registration-service
-│      └── Registration gateway
+│      └── Registration service
 │
 ├── afm-frontend-ui
-│      └── UI / BFF
+│      └── UI / Reverse Proxy
 │
 ├── APA application
 │      └── Streamlit / RAG / dynamic read-only access
 │
 └── APA knowledge base
        └── AFM documentation / RAG content
+
+| `afm-login-service` | Login Service |
+| `afm-registration-service` | Registration Service |
+
 ```
 
 | Repository / Component | Responsibility |
@@ -1256,7 +1261,7 @@ AFM v3 Portfolio
 | `afm-auth-service` | Core identity/authentication service |
 | `afm-login-service` | Login gateway |
 | `afm-registration-service` | Registration gateway |
-| `afm-frontend-ui` | Frontend and BFF |
+| `afm-frontend-ui` | Frontend and Reverse Proxy |
 | APA application | Streamlit application, routing, RAG and dynamic integrations |
 | APA knowledge base | Static AFM knowledge and documentation |
 
@@ -2040,13 +2045,13 @@ For this reference application, this provides a useful service boundary without 
 
 ---
 
-## 🖥️ Why a Spring Boot UI/BFF Instead of React?
+## 🖥️ Why a Spring Boot UI/Reverse Proxy Instead of React?
 
 React could have been used.
 
-A React SPA could have been used. The selected UI/BFF approach keeps the application intentionally small so that the project can focus on backend, cloud, DevOps and platform engineering.
+A React SPA could have been used. The selected UI/Reverse Proxy approach keeps the application intentionally small so that the project can focus on backend, cloud, DevOps and platform engineering.
 
-A Spring Boot-based UI/BFF provides:
+A Spring Boot-based UI/Reverse Proxy provides:
 
 - A realistic web application
 - A public ingress path
@@ -2224,7 +2229,7 @@ ALB
    ↓
 Frontend
    ↓
-BFF
+Reverse Proxy
    ↓
 Application Services
 ```
