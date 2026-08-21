@@ -1,5 +1,6 @@
 # AFM v3 — GitOps DevSecOps Cloud Project
 ### **Portfolio by Swapnil Gavhale**
+-----------------------------------------------------------------------
 
 > **AFM = Application / Feature / Microservice**
 
@@ -44,6 +45,7 @@ Read-only AI-assisted Operations
 ```
 
 The project is primarily about **how the platform is engineered and operated**. The reference application supplies a realistic workload for the platform; it is not intended to represent a real banking system.
+-----------------------------------------------------------------------
 
 ### What this repository covers
 
