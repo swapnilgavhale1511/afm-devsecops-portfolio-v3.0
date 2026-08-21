@@ -1,4 +1,5 @@
-# AFM v3 — GitOps DevSecOps Cloud Platform
+# AFM v3 — GitOps DevSecOps Cloud Project
+### **Portfolio by Swapnil Gavhale**
 
 > **AFM = Application / Feature / Microservice**
 
@@ -124,6 +125,107 @@ Where:
 
 The primary portfolio story is **the AFM v3 platform and its engineering lifecycle**, not the banking domain.
 
+---
+
+# 🎯 Problem Statement & Motivation
+
+Modern cloud-native platforms require more than simply running containers or
+creating CI/CD pipelines. As application services, infrastructure,
+security requirements and operational dependencies increase, teams need
+repeatable delivery, controlled deployments, infrastructure automation,
+security validation and actionable observability.
+
+AFM v3 was developed as an evolution of the original AFM platform to address
+these engineering challenges through a GitOps-based, DevSecOps and
+SRE-oriented architecture.
+
+The project focuses on:
+
+- Repeatable AWS infrastructure provisioning through Terraform
+- Independent CI/CD pipelines for application services
+- Git-based Kubernetes deployment management through Argo CD
+- Security validation across application, container and Infrastructure-as-Code
+  delivery stages
+- Centralized application, Kubernetes, AWS, ALB and RDS observability
+- Automated alerting and operational incident visibility
+- Cost-aware management of an ephemeral EKS development platform
+- Read-only AI-assisted platform investigation through APA
+
+The goal is not to demonstrate individual tools in isolation, but to
+demonstrate how these technologies work together as an operational platform.
+
+### Motivation Behind AFM v3
+
+AFM v3 was created to demonstrate the evolution from a traditional
+CI/CD-oriented application platform into a more complete cloud-native
+DevOps platform.
+
+The project intentionally emphasizes:
+
+- **Automation over manual operations**
+- **GitOps over direct Kubernetes deployment**
+- **Security throughout the delivery lifecycle**
+- **Observability as an operational requirement**
+- **Failure analysis and recovery**
+- **Cost-aware infrastructure design**
+- **Operational visibility through AI-assisted read-only investigation**
+
+---
+
+# 🧬 AFM v2 → v3 Evolution
+
+AFM v3 represents the evolution of the original AFM application and DevSecOps
+foundation into a broader cloud-native delivery, GitOps, observability and
+platform engineering environment.
+
+The project did not start with the final architecture. It evolved through
+application development, CI/CD, containerization, AWS infrastructure,
+Kubernetes, security, observability, GitOps and finally AI-assisted
+read-only operations.
+
+| Area | AFM v2 | AFM v3 |
+|---|---|---|
+| Application repositories | Earlier project structure | Independent repository for each AFM service |
+| CI/CD | CI/CD-oriented delivery | CI builds, validates and publishes artifacts |
+| Kubernetes deployment | CI/CD/manual deployment workflow | Argo CD GitOps reconciliation |
+| Infrastructure | Terraform-based AWS infrastructure | Terraform with separated ephemeral/persistent lifecycle |
+| Deployment model | Standard deployment | Controlled Blue-Green deployment for `afm-auth-service` |
+| Security | Core application scanning | SonarQube + Trivy + Trivy IaC + OWASP ZAP |
+| Observability | Prometheus / Grafana foundation | Prometheus + Grafana + Alertmanager + YACE + CloudWatch |
+| AWS monitoring | Basic AWS monitoring | RDS and ALB metrics integrated into Prometheus/Grafana |
+| Alerting | Basic monitoring | Alertmanager → Slack |
+| Secrets | Earlier secret-management approach | AWS Secrets Manager + External Secrets |
+| AWS workload identity | Earlier model | IRSA for `afm-auth-service` + EKS Pod Identity for APA |
+| Kubernetes capacity | Earlier single-node constraint | Two-node EKS platform with dedicated APA workload capacity |
+| DNS / TLS | Earlier constrained implementation | Route 53 + ACM + ALB |
+| AI operations | Not present | APA with static RAG + dynamic read-only AWS/Kubernetes access |
+
+### Evolution in one view
+
+
+```text
+AFM v2
+  ↓
+Application + CI/CD Foundation
+  ↓
+AFM v3
+  ↓
+Terraform + AWS + EKS
+  ↓
+DevSecOps
+  ↓
+Argo CD GitOps
+  ↓
+Prometheus + Grafana + Alerting
+  ↓
+SRE-oriented Operations
+  ↓
+Static RAG
+  ↓
+Dynamic APA
+  ↓
+Read-only AWS + Kubernetes Operations
+```
 ---
 
 ## 🎯 Project Objectives
@@ -282,7 +384,7 @@ APA participates in the **Understand** stage by retrieving project documentation
 
 ---
 
-# 🧭 Project Evolution
+# 🧭 AFM v3 Project Evolution
 
 AFM was not designed as a finished architecture on day one.
 
@@ -1249,9 +1351,6 @@ AFM v3 Portfolio
 └── APA knowledge base
        └── AFM documentation / RAG content
 
-| `afm-login-service` | Login Service |
-| `afm-registration-service` | Registration Service |
-
 ```
 
 | Repository / Component | Responsibility |
@@ -1788,6 +1887,7 @@ Recommended diagrams:
 
 - Overall AWS architecture
 - AFM application architecture
+- AFM authentication and registration flow
 - Terraform lifecycle
 - CI/CD architecture
 - GitOps flow
@@ -1901,38 +2001,29 @@ Potential future enhancements include:
 
 ---
 
-# 📚 Documentation Structure
+# 📚 Portfolio Documentation Structure
 
-The root README is the **executive portfolio entry point**.
-
-Detailed engineering evidence should live under:
+The portfolio repository separates project explanation, visual architecture,
+implementation evidence and detailed technical documentation.
 
 ```text
-docs/
-├── architecture/
-│   ├── architecture-overview.md
-│   ├── application-architecture.md
-│   ├── aws-architecture.md
-│   └── networking.md
+AFM v3 Portfolio
 │
-├── engineering-decisions/
-│   ├── application-stack.md
-│   ├── aws-services.md
-│   ├── terraform.md
-│   ├── cicd.md
-│   ├── eks.md
-│   ├── gitops.md
-│   ├── security.md
-│   ├── observability.md
-│   └── apa.md
+├── README.md
+│   └── Project overview and engineering story
 │
-├── evolution/
-│   └── afm-v2-to-v3.md
+├── diagrams/
+│   └── Architecture and workflow diagrams
 │
-└── incidents/
-    ├── eks-capacity.md
-    ├── eks-race-condition.md
-    └── secrets.md
+├── pipeline-docs/
+│   └── Detailed CI/CD, infrastructure and APA documentation
+│
+├── Project-documents/
+│   └── Detailed AFM v3 technical project report
+│
+└── screenshots/
+    └── Runtime, pipeline, AWS, Kubernetes, GitOps,
+        observability, security and APA evidence
 ```
 
 The detailed documents answer the deeper:
