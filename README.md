@@ -751,6 +751,11 @@ Terraform Plan
    ↓
 Controlled Apply
 ```
+Trivy IaC is also used as a security feedback mechanism for Terraform configuration. 
+During development, the scan identified EKS control-plane exposure and disabled secrets 
+encryption as findings requiring evaluation. These findings were reviewed against the 
+ephemeral development environment and are documented in the Engineering Decisions & 
+Trade-offs section.
 
 ---
 
@@ -2139,6 +2144,72 @@ For this project, the operational learning value justified that complexity.
 | IAM | AWS authorization boundary | IAM policy design can be complex |
 | Kubernetes RBAC | Kubernetes authorization | Requires careful permission management |
 | BCrypt | Secure password hashing | Computationally expensive by design |
+
+
+---
+## 🔐 EKS Public API Access — Development Environment Decision
+
+The Trivy IaC scan identified the following EKS security findings in the development environment:
+
+| Finding | Severity | Development configuration |
+|---|---|---|
+| EKS secrets encryption disabled | HIGH | Enabled only when moving toward a production-like environment |
+| EKS public API access enabled | CRITICAL | Intentionally enabled for the ephemeral development environment |
+| EKS public API CIDR `0.0.0.0/0` | CRITICAL | Intentionally retained for development/test access |
+
+### Why was EKS public access enabled?
+
+The AFM v3 EKS cluster is an **ephemeral development/test platform** that is regularly created and destroyed to control AWS costs.
+
+For this environment, the Kubernetes API endpoint was intentionally configured with public access so that engineers could administer and troubleshoot the cluster using standard Kubernetes tooling such as `kubectl` without introducing additional private-access infrastructure such as a VPN, bastion host or dedicated network connectivity solution.
+
+The development environment prioritizes:
+
+- Rapid cluster creation and destruction
+- Simple administrative access
+- Portfolio demonstration and testing
+- Low infrastructure cost
+- Easy troubleshooting during development
+
+The configuration therefore represents an **accepted development-environment trade-off**, not the intended production security posture.
+
+### Why `0.0.0.0/0`?
+
+`0.0.0.0/0` allows the EKS API endpoint to accept connections from any IPv4 source, subject to the other AWS and Kubernetes authentication/authorization controls.
+
+This was retained in the ephemeral development environment to avoid repeatedly updating the EKS API allow-list when the engineer's external IP address changes.
+
+However, this significantly increases the exposure of the Kubernetes API endpoint and was therefore correctly identified by Trivy as a **CRITICAL** infrastructure security finding.
+
+The finding is intentionally documented rather than hidden.
+
+### Production / production-like hardening
+
+For a production or production-like environment, the EKS API endpoint should be hardened by:
+
+1. Restricting public API access to approved corporate/VPN/bastion CIDR ranges, or
+2. Using private EKS API access where appropriate.
+3. Removing `0.0.0.0/0` from the public access CIDR configuration.
+4. Enabling EKS secrets encryption using AWS KMS.
+5. Reviewing the resulting access model before enabling the cluster for production workloads.
+
+The important distinction is:
+
+> **The development configuration was intentionally optimized for accessibility and cost, while the production security posture would prioritize restricted API exposure and stronger control-plane protection.**
+
+### DevSecOps lesson
+
+This finding demonstrates why IaC security scanning is useful even when the infrastructure is intentionally configured for a specific development requirement.
+
+Trivy did not simply produce a "failed" result. It identified a security risk, which was then evaluated against:
+
+- Environment purpose
+- Operational requirements
+- Cost constraints
+- Security exposure
+- Production hardening requirements
+
+The result is an **explicitly accepted development trade-off with a documented remediation path**, rather than an undocumented security weakness.
 
 ---
 
