@@ -75,7 +75,7 @@ AFM v3 is implemented as a collection of independently versioned application, in
 | Capability | Implemented components |
 |---|---|
 | Cloud foundation | AWS VPC, public/private subnets, routing, security groups, Internet Gateway, NAT Instance |
-| Kubernetes platform | Amazon EKS, worker nodes, EKS addons, workload scheduling and capacity configuration |
+| Kubernetes platform | Amazon EKS, two-node worker capacity, EKS addons, workload scheduling and capacity engineering |
 | Application runtime | Java 17, Spring Boot, four AFM application components, executable JARs and Docker images |
 | Database | Amazon RDS PostgreSQL |
 | Application ingress | Route 53, ACM, Application Load Balancer and AWS Load Balancer Controller |
@@ -588,22 +588,132 @@ Major services include:
 - CloudWatch
 
 These services form the cloud foundation on which the application, GitOps, observability and APA layers run.
+
+### AWS Services Intentionally Not Used
+
+AFM v3 does not attempt to use every available AWS service.
+
+Services such as SNS, SES, SQS and EventBridge were not introduced because the
+current reference application does not require notification, email,
+queue-based or event-driven workflows.
+
+| Service | Reason not currently used |
+|---|---|
+| SNS | No application event/notification workflow currently requires SNS |
+| SES | No email delivery workflow is required |
+| SQS | No asynchronous queue-based workflow is required |
+| EventBridge | No event-driven cross-service workflow is currently required |
+
+Adding these services without a real workload requirement would increase
+architecture and operational complexity without providing meaningful
+additional platform capability.
+
+They remain possible extensions if the reference application evolves.
+
 # 💰 Cost-Conscious Infrastructure Design
 
-The platform is deliberately designed for development/testing and portfolio demonstration rather than production HA.
+The platform is deliberately designed for development/testing and portfolio
+demonstration rather than production HA.
 
 The project uses:
-
 - Cost-conscious EC2 worker nodes
 - NAT Instance rather than NAT Gateway
 - Ephemeral EKS infrastructure
 - Controlled infrastructure destruction
 - Persistent storage only where required
-- Long-lived AWS resources kept selectively where recreating them would be unnecessary or expensive
+- Long-lived AWS resources kept selectively where recreating them would be
+  unnecessary or expensive
 
+### Compute Sizing
+
+The selected compute sizes are intentionally modest and matched to the
+portfolio workload rather than production-scale capacity.
+
+| Resource | Configuration | Purpose |
+|---|---|---|
+| GitLab Runner | `t3.medium` | CI/CD, Docker builds, Maven builds, Terraform and security scans |
+| EKS application/platform node | `t3.medium` | AFM application and platform workloads |
+| EKS APA node | `t3.medium` | Dedicated capacity for the APA workload |
+| NAT Instance | `t2.micro` | Cost-conscious outbound internet connectivity |
+| RDS PostgreSQL | `db.t3.micro` | Small reference application database |
+
+### `t3.medium` Worker Capacity
+
+The EKS worker nodes use `t3.medium` instances.
+
+Each instance provides:
+
+- **2 vCPUs**
+- **4 GiB memory**
+- **20 GiB root EBS storage** in the current EKS node configuration
+
+The `t3.medium` size was selected as a cost-conscious baseline that provides
+enough CPU and memory for the AFM application/platform workload while keeping
+the development environment affordable.
+
+The APA workload is placed on a dedicated `t3.medium` node because its
+Python/Streamlit and LLM-oriented runtime has a different resource profile from
+the Java application workloads.
+
+### Trade-off
+
+`t3.medium` provides considerably less capacity than production-oriented
+worker instances. This requires:
+
+- Resource requests and limits
+- Pod-capacity planning
+- Workload separation where necessary
+- Monitoring of node CPU and memory utilization
+
+The project therefore treats **capacity planning as an engineering concern**
+rather than simply selecting larger instances.
+
+### Storage
+
+The worker nodes use **20 GiB root storage** in the current configuration.
+This is sufficient for the ephemeral development workload while avoiding
+unnecessary EBS capacity.
+
+Persistent application data is not dependent on the worker-node root disk;
+the PostgreSQL database is provided by Amazon RDS.
 The development EKS environment can be destroyed when it is not required.
 
 This results in a lower-cost environment with intentionally reduced availability and redundancy compared with a production multi-AZ architecture.
+
+### FinOps Approach
+
+Cost optimization is treated as an engineering constraint throughout the
+development environment.
+The development lifecycle is therefore:
+
+```text
+Create
+  ↓
+Deploy
+  ↓
+Validate / Demonstrate
+  ↓
+Monitor
+  ↓
+Destroy ephemeral infrastructure
+  ↓
+Retain only required persistent resources
+```
+
+The objective is to balance:
+
+```text
+Engineering Capability
+        +
+Availability
+        +
+Operational Simplicity
+        +
+Security
+        +
+Cost
+```
+
 # 🌐 Networking
 
 The platform uses a Terraform-managed VPC with:
@@ -750,6 +860,25 @@ Application
 
 The authentication service uses AWS Secrets Manager for sensitive database/JWT-related secret material.
 
+---
+### ⚙️ Application Configuration
+
+AFM v3 does not introduce a single shared ConfigMap for application
+configuration because the services have different configuration
+responsibilities.
+
+Non-sensitive configuration remains associated with the workload that consumes
+it, while sensitive values follow:
+
+```text
+AWS Secrets Manager
+        ↓
+External Secrets
+        ↓
+Kubernetes Secret
+        ↓
+Application
+```
 ---
 
 # 🔑 Workload Identity — IRSA vs EKS Pod Identity
@@ -1750,42 +1879,6 @@ The result is an operations-focused monitoring layer rather than simply a dashbo
 
 ---
 
-# 📈 AFM v2 → AFM v3 Evolution
-
-One of the most important architectural changes was the move from manually operated deployment toward GitOps.
-
-### Earlier model
-
-```text
-Developer
-   ↓
-Manual kubectl operations
-   ↓
-Kubernetes
-```
-
-### AFM v3
-
-```text
-Developer
-   ↓
-GitLab CI/CD
-   ↓
-Build + Security
-   ↓
-ECR
-   ↓
-GitOps Repository
-   ↓
-Argo CD
-   ↓
-EKS
-```
-
-This changed the platform from an application that could be deployed on Kubernetes into a more complete **GitOps-operated platform**.
-
----
-
 # 🧬 Overall Platform Evolution
 
 ```text
@@ -1954,22 +2047,6 @@ These limitations are intentionally documented rather than hidden.
 
 ---
 
-# 🛣️ Future Roadmap
-
-Potential future enhancements include:
-
-- OAuth2 / OIDC
-- Refresh-token rotation and revocation
-- OpenTelemetry distributed tracing
-- Automated Blue-Green evaluation
-- Progressive delivery based on Prometheus metrics
-- Service mesh and mTLS
-- Additional resilience patterns
-- Expanded SRE automation
-- Additional read-only APA tools
-- Additional AI-assisted operational workflows while preserving the read-only security boundary
-
----
 # 🛣️ Future Enhancements & Production Evolution
 
 AFM v3 is intentionally scoped as a production-inspired portfolio platform.
@@ -2243,31 +2320,75 @@ AWS is the chosen cloud implementation, so the platform is intentionally AWS-ori
 
 ---
 
-## ☸️ Why Amazon EKS?
+## ☸️ Why Amazon EKS Instead of ECS, Lambda or Direct EC2?
 
-EKS was selected instead of running Kubernetes directly on EC2 because the project is intended to demonstrate managed Kubernetes operations.
+Amazon EKS was selected because Kubernetes itself is an important part of the
+engineering scope of AFM v3.
 
-### Why EKS?
+The objective was not simply to run containers in AWS, but to demonstrate:
 
-- Managed Kubernetes control plane
-- Native AWS IAM integration
-- VPC networking
-- ECR integration
-- Load Balancer Controller integration
 - Kubernetes workload orchestration
-- Realistic cloud platform model
+- Kubernetes RBAC
+- Ingress and AWS Load Balancer Controller integration
+- GitOps with Argo CD
+- Kubernetes-native observability
+- Workload scheduling and capacity management
+- Kubernetes-based operational troubleshooting
+- AI-assisted read-only Kubernetes investigation through APA
+
+### Alternatives Considered
+
+| Option | Why it was not selected |
+|---|---|
+| ECS / Fargate | Simpler container orchestration, but would not demonstrate Kubernetes, Argo CD, Kubernetes RBAC, pod scheduling or Kubernetes-native operations |
+| Lambda | Suitable for serverless/event-driven workloads, but does not provide the Kubernetes platform-engineering scope of AFM v3 |
+| ECS + Lambda | Valid AWS architecture, but would shift the project away from Kubernetes and GitOps |
+| Direct EC2 | Provides host-level control, but requires more manual workload orchestration and does not demonstrate Kubernetes-native operations |
+| EKS | Selected because managed AWS infrastructure and Kubernetes platform engineering are both part of the project objective |
 
 ### Trade-off
 
-EKS introduces:
+EKS introduces more complexity than ECS or Lambda, including:
 
-- AWS dependency
-- Additional platform components
-- Networking complexity
-- Node/pod capacity management
-- Additional cost
+- Worker-node management
+- Kubernetes networking
+- Pod scheduling
+- RBAC
+- Addons
+- Ingress controllers
+- Cluster observability
+- Capacity planning
 
-For this project, the operational learning value justified that complexity.
+That complexity is intentional because **Kubernetes platform engineering is a
+core objective of AFM v3**.
+
+## 🌎 Why Not a Multi-AZ Production Architecture?
+
+AFM v3 intentionally uses a small two-node EKS development platform rather than
+a production multi-AZ architecture.
+
+The objective is to demonstrate cloud-native platform engineering while keeping
+the environment affordable enough to repeatedly create and destroy.
+
+A production-oriented architecture would typically introduce:
+
+- Worker capacity across multiple Availability Zones
+- Higher node redundancy
+- Multi-AZ database deployment
+- Higher availability for supporting components
+- Stronger disaster-recovery design
+
+These were not implemented because AFM v3 is a portfolio/development platform
+with controlled usage and an intentionally cost-conscious infrastructure
+model.
+
+### Trade-off
+
+The current architecture has lower availability and resilience than a
+production multi-AZ platform.
+
+This is an intentional **cost-versus-availability trade-off**, not a claim
+that the current two-node environment represents production HA.
 
 ---
 
