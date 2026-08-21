@@ -1,4 +1,4 @@
-# AFM v3 — GitOps DevSecOps Cloud Project
+# 🚀 AFM v3 — GitOps DevSecOps Cloud Project
 ### **Portfolio by Swapnil Gavhale**
 -----------------------------------------------------------------------
 
@@ -1970,7 +1970,49 @@ Potential future enhancements include:
 - Additional AI-assisted operational workflows while preserving the read-only security boundary
 
 ---
+# 🛣️ Future Enhancements & Production Evolution
 
+AFM v3 is intentionally scoped as a production-inspired portfolio platform.
+The following capabilities represent possible future evolution rather than
+current project functionality.
+
+### Application & Security
+
+- OAuth2 / OIDC integration
+- Refresh-token rotation and revocation
+- Additional service-to-service security
+- mTLS where appropriate
+
+### Platform & SRE
+
+- OpenTelemetry distributed tracing
+- Automated Blue-Green validation
+- Progressive delivery based on Prometheus metrics
+- Service mesh where justified
+- Additional resilience patterns
+- Expanded SRE automation
+
+### AI-Assisted Operations
+
+- Additional read-only APA tools
+- Broader Kubernetes and AWS investigation capabilities
+- Correlation of metrics, events and platform state
+- Additional AI-assisted operational analysis while preserving the
+  read-only security boundary
+
+### Production Hardening
+
+A production-oriented deployment would additionally consider:
+
+- Multi-AZ EKS worker capacity
+- Private EKS API access or tightly restricted public CIDRs
+- EKS secrets encryption with AWS KMS
+- Higher availability for supporting platform components
+- Stronger disaster-recovery and backup strategy
+- Formal SLO/SLI governance
+- Centralized audit and security monitoring
+
+---
 # 🎓 Skills Demonstrated
 
 ## Cloud / Platform Engineering
