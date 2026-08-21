@@ -1,5 +1,7 @@
-# 🚀 AFM v3 — GitOps DevSecOps Cloud Project
-### **Portfolio by Swapnil Gavhale**
+# 🚀 AFM v3 — GitOps DevSecOps Cloud Platform
+
+### Portfolio Project by Swapnil Gavhale
+**Role: DevOps / Cloud / Platform Engineer**
 -----------------------------------------------------------------------
 
 > **AFM = Application / Feature / Microservice**
@@ -67,7 +69,38 @@ The project is primarily about **how the platform is engineered and operated**. 
 - A separate **Engineering Decisions & Trade-offs** section at the end
 
 ---
+---
 
+## 👨‍💻 My Role
+
+**Role: DevOps / Cloud / Platform Engineer**
+
+I designed and implemented the AFM v3 platform end-to-end, with primary
+responsibility for cloud infrastructure, CI/CD, GitOps, DevSecOps,
+observability, SRE-oriented operations and the read-only APA platform layer.
+
+### Key Responsibilities
+
+- Designed and implemented AWS infrastructure using Terraform
+- Built and operated Amazon EKS and Kubernetes workloads
+- Designed GitLab CI/CD pipelines for application and infrastructure delivery
+- Implemented Docker image build and Amazon ECR publishing workflows
+- Implemented GitOps deployment using Argo CD
+- Integrated SonarQube, Trivy, Trivy IaC and OWASP ZAP into delivery pipelines
+- Implemented AWS Secrets Manager and External Secrets
+- Designed workload identity using IRSA and EKS Pod Identity
+- Implemented Prometheus, Grafana, Alertmanager and YACE observability
+- Built SRE-oriented dashboards, alerting and operational workflows
+- Implemented controlled Blue-Green deployment for `afm-auth-service`
+- Investigated Kubernetes capacity, scheduling and infrastructure issues
+- Designed the read-only APA architecture with static RAG and dynamic
+  Kubernetes/AWS integrations
+- Implemented least-privilege Kubernetes RBAC and AWS IAM controls for APA
+- Documented architectural decisions, trade-offs, limitations and production
+  evolution paths
+- Applied cost-aware infrastructure practices for the ephemeral development
+  environment
+---
 ## 🧱 What Was Built
 
 AFM v3 is implemented as a collection of independently versioned application, infrastructure, GitOps, observability and AI/platform components.
@@ -2777,3 +2810,22 @@ The configuration must therefore be matched with actual node resources and workl
 | AI | RAG + OpenAI + dynamic AWS/Kubernetes reads | Project-grounded, current platform information | API cost and integration complexity |
 | APA security | Strictly read-only | Minimize operational blast radius | No autonomous remediation |
 | Infrastructure cost | Cost-conscious / ephemeral EKS | Suitable for portfolio development | Lower availability and resilience |
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+See the [LICENSE](LICENSE) file for the full license text.
+
+---
+
+# © Copyright
+
+© 2026 Swapnil Gavhale. All rights reserved for original portfolio
+documentation, architecture diagrams, screenshots and other personally
+authored materials unless otherwise stated.
+
+Third-party tools, libraries, frameworks, trademarks and referenced
+technologies remain the property of their respective owners.
