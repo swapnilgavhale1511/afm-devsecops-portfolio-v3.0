@@ -50,10 +50,6 @@ Observability / SRE
     ↓
 Read-only AI-assisted Operations
 ```
-
-The project is primarily about **how the platform is engineered and operated**. The reference application supplies a realistic workload for the platform; it is not intended to represent a real banking system.
------------------------------------------------------------------------
-
 ### What this repository covers
 
 - Application and microservice architecture
