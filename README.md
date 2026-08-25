@@ -8,6 +8,11 @@
 
 > AFM v3 is a production-inspired cloud-native **DevOps, DevSecOps, GitOps and platform engineering project** built around a small reference application, **AFM Bank**, and evolved into an AWS EKS-based platform with CI/CD, Infrastructure as Code, security, observability, SRE practices and a read-only AI-assisted operations layer.
 
+> **Architecture:** AFM v3 uses a cloud-native, microservices-based
+> **3-tier application architecture** deployed on Amazon EKS and operated
+> through GitOps, with dedicated CI/CD, infrastructure automation,
+> observability, security and read-only AI-assisted operations capabilities.
+
 ![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.11-6DB33F?logo=springboot)
 ![Terraform](https://img.shields.io/badge/Terraform-1.x-844FBA?logo=terraform)
