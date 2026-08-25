@@ -289,7 +289,15 @@ AFM v3 demonstrates an end-to-end engineering lifecycle across:
 The main body of this README explains **what the project contains, how the components work together, and how software and infrastructure move through the platform**. Detailed architectural reasoning is intentionally consolidated at the end.
 
 ---
+### AFM v3 — 3-Tier Application Architecture
 
+![AFM v3 3-Tier Architecture](screenshots/afm-project/diagrams/afm-v3-3-tier-architecture-logical-view.png)
+
+*Logical view of the AFM v3 three-tier application architecture and the
+cross-cutting AWS EKS, GitOps, CI/CD, observability, security and
+read-only AI-assisted operations capabilities.*
+
+---
 # 🔄 How AFM v3 Works End-to-End
 
 The complete lifecycle connects source code, infrastructure, security, deployment, observability and read-only operational assistance.
