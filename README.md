@@ -26,90 +26,113 @@
 ![Trivy](https://img.shields.io/badge/Trivy-Security-1904DA)
 
 ---
+## 📊 Project Snapshot
+
+| Area | Implementation |
+|---|---|
+| Cloud Platform | AWS |
+| Kubernetes | Amazon EKS |
+| Application Architecture | 3-tier Spring Boot microservices |
+| Application Services | 4 Spring Boot components |
+| Database | Amazon RDS PostgreSQL |
+| Infrastructure as Code | Terraform |
+| CI/CD | GitLab CI/CD |
+| Containerization | Docker + Amazon ECR |
+| Continuous Delivery | Argo CD + GitOps |
+| Ingress & TLS | Route 53 + ACM + Application Load Balancer |
+| Security | SonarQube + Trivy + Trivy IaC + OWASP ZAP |
+| Secrets & Identity | AWS Secrets Manager + External Secrets + IRSA + EKS Pod Identity |
+| Observability | Prometheus + Grafana + Alertmanager + YACE + CloudWatch |
+| Deployment Strategy | Controlled Blue-Green deployment |
+| AI-Assisted Operations | APA — strictly read-only |
+| Infrastructure Model | Cost-conscious / ephemeral EKS development platform |
+---
+## ⭐ Key Engineering Highlights
+
+- Designed and implemented a **3-tier Spring Boot microservices application** deployed on Amazon EKS with Amazon RDS PostgreSQL.
+- Built **Terraform-managed AWS infrastructure** with reusable modules and separated ephemeral and persistent resource lifecycles.
+- Implemented **GitLab CI/CD** for application build, test, security validation, containerization and Amazon ECR image publishing.
+- Implemented **GitOps-based continuous delivery with Argo CD**, separating CI artifact creation from Kubernetes desired-state reconciliation.
+- Integrated **DevSecOps controls** across application, container and Infrastructure-as-Code delivery using SonarQube, Trivy, Trivy IaC and OWASP ZAP.
+- Implemented **AWS Secrets Manager + External Secrets** for Kubernetes application secrets without storing credentials in source control.
+- Implemented workload-specific AWS identity using **IRSA for `afm-auth-service`** and **EKS Pod Identity for APA**, following least-privilege principles.
+- Built centralized **observability across application, Kubernetes and AWS infrastructure** using Prometheus, Grafana, Alertmanager, YACE and CloudWatch.
+- Implemented a **controlled Blue-Green deployment strategy** for `afm-auth-service`, including explicit release and rollback handling.
+- Addressed **EKS workload capacity and scheduling constraints** through additional node capacity, workload separation and dedicated APA worker capacity.
+- Built and deployed **APA (AFM Platform Assistant)** as a containerized, strictly read-only platform operations service on **Amazon EKS**, integrated into the **GitLab CI/CD and Argo CD GitOps workflow**, with dedicated Kubernetes worker capacity and **EKS Pod Identity** for read-only AWS access; implemented using the **OpenAI API** and project-grounded **RAG** to combine live AWS/Kubernetes state with AFM platform knowledge and troubleshooting guidance.
+- Documented **engineering trade-offs, security findings, operational constraints and production-hardening paths** rather than presenting the cost-conscious portfolio environment as production-ready.
+---
+## 🔎 Explore the Project
+
+| Area | What you can review |
+|---|---|
+| 🏗️ Architecture | AWS, EKS, 3-tier application, networking, ingress, security and platform architecture |
+| 🔄 CI/CD | GitLab pipelines, application build, security scanning, Docker and Amazon ECR |
+| 🚀 GitOps | Argo CD, GitOps repository, desired state and EKS deployment flow |
+| ☁️ Infrastructure | Terraform, AWS VPC, EKS, RDS, IAM, Secrets Manager and supporting services |
+| 🔐 DevSecOps | SonarQube, Trivy, Trivy IaC, OWASP ZAP, IAM, RBAC and workload identity |
+| 📊 Observability | Prometheus, Grafana, Alertmanager, YACE, CloudWatch and operational dashboards |
+| 🤖 APA | EKS deployment, GitOps delivery, OpenAI API, RAG, AWS/Kubernetes read-only integrations |
+| 🚧 Engineering Challenges | EKS capacity, scheduling, GitOps synchronization, security findings and operational issues |
+| ⚖️ Engineering Decisions | Technology choices, alternatives considered, trade-offs and production evolution |
+---
 
 ## 🚀 Project at a Glance
 
-AFM v3 demonstrates the complete lifecycle of a cloud-native application and the platform built around it.
+AFM v3 demonstrates the end-to-end lifecycle of a cloud-native application and
+the platform engineering capabilities required to build, secure, deploy,
+observe and operate it.
 
 ```text
-Application
-    ↓
-Source Control
-    ↓
-CI/CD + Security
-    ↓
-Container Image
-    ↓
-Infrastructure as Code
-    ↓
-AWS / EKS
-    ↓
-GitOps / Argo CD
-    ↓
-Observability / SRE
-    ↓
-Read-only AI-assisted Operations
+Application Source
+       ↓
+GitLab CI/CD + DevSecOps
+       ↓
+Docker + Amazon ECR
+       ↓
+Terraform / AWS Infrastructure
+       ↓
+Amazon EKS
+       ↓
+Argo CD / GitOps
+       ↓
+Running Application + Platform Workloads
+       ↓
+Prometheus / Grafana / Alertmanager / CloudWatch
+       ↓
+Read-only APA Platform Operations
 ```
-### What this repository covers
-
-- Application and microservice architecture
-- AWS cloud infrastructure
-- Terraform Infrastructure as Code
-- EKS and Kubernetes
-- GitLab CI/CD
-- Docker and Amazon ECR
-- Argo CD GitOps
-- DevSecOps security controls
-- Secrets management and workload identity
-- Prometheus, Grafana, Alertmanager and YACE
-- SRE-oriented operational dashboards
-- Troubleshooting and operational workflows
-- APA — AFM Platform Assistant
-- Static RAG and dynamic read-only AWS/Kubernetes access
-- Engineering challenges, limitations and roadmap
-- A separate **Engineering Decisions & Trade-offs** section at the end
-
----
----
 
 ## 👨‍💻 My Role
 
 **Role: DevOps / Cloud / Platform Engineer**
 
-I designed and implemented the AFM v3 platform end-to-end, with primary
-responsibility for cloud infrastructure, CI/CD, GitOps, DevSecOps,
-observability, SRE-oriented operations and the read-only APA platform layer.
+I designed, implemented and operated the AFM v3 platform end-to-end, covering AWS infrastructure, Amazon EKS, CI/CD, GitOps, DevSecOps, observability, reliability engineering and AI-assisted platform operations.
 
-### Key Responsibilities
+### Core Responsibilities
 
-- Designed and implemented AWS infrastructure using Terraform
-- Built and operated Amazon EKS and Kubernetes workloads
-- Designed GitLab CI/CD pipelines for application and infrastructure delivery
-- Implemented Docker image build and Amazon ECR publishing workflows
-- Implemented GitOps deployment using Argo CD
-- Integrated SonarQube, Trivy, Trivy IaC and OWASP ZAP into delivery pipelines
-- Implemented AWS Secrets Manager and External Secrets
-- Designed workload identity using IRSA and EKS Pod Identity
-- Implemented Prometheus, Grafana, Alertmanager and YACE observability
-- Built SRE-oriented dashboards, alerting and operational workflows
-- Implemented controlled Blue-Green deployment for `afm-auth-service`
-- Investigated Kubernetes capacity, scheduling and infrastructure issues
-- Designed the read-only APA architecture with static RAG and dynamic
-  Kubernetes/AWS integrations
-- Implemented least-privilege Kubernetes RBAC and AWS IAM controls for APA
-- Documented architectural decisions, trade-offs, limitations and production
-  evolution paths
-- Applied cost-aware infrastructure practices for the ephemeral development
-  environment
+- Owned the **AWS cloud and EKS platform**, including VPC networking, worker capacity, Kubernetes workloads, IAM, RDS, ECR, Secrets Manager, ACM and Route 53.
+- Designed and maintained **Terraform Infrastructure as Code** with reusable modules and separate infrastructure lifecycles.
+- Designed and implemented **GitLab CI/CD** for application and infrastructure delivery, including build, testing, security validation, containerization and ECR publishing.
+- Implemented **GitOps-based Kubernetes delivery with Argo CD**, maintaining desired state through a dedicated GitOps repository.
+- Integrated **DevSecOps controls** using SonarQube, Trivy, Trivy IaC and OWASP ZAP.
+- Implemented **secrets management and workload identity** using AWS Secrets Manager, External Secrets, IRSA and EKS Pod Identity.
+- Built and operated the **observability/SRE stack** using Prometheus, Grafana, Alertmanager, YACE and CloudWatch.
+- Implemented and validated **controlled Blue-Green deployment** for `afm-auth-service`, including release and rollback handling.
+- Investigated **EKS capacity, scheduling and networking issues**, including pod/IP capacity and workload placement.
+- Designed and deployed **APA** as a containerized EKS workload integrated with GitLab CI/CD and Argo CD, using OpenAI API, RAG and strictly read-only AWS/Kubernetes integrations.
+- Maintained architecture, operational, troubleshooting, security and engineering-decision documentation throughout the platform lifecycle.
 ---
+
 ## 🧱 What Was Built
 
-AFM v3 is implemented as a collection of independently versioned application, infrastructure, GitOps, observability and AI/platform components.
+AFM v3 was implemented as a set of independently versioned application,
+infrastructure, GitOps, observability and AI/platform components.
 
 | Capability | Implemented components |
 |---|---|
 | Cloud foundation | AWS VPC, public/private subnets, routing, security groups, Internet Gateway, NAT Instance |
-| Kubernetes platform | Amazon EKS, two-node worker capacity, EKS addons, workload scheduling and capacity engineering |
+| Kubernetes platform | Amazon EKS, worker capacity, EKS addons, workload scheduling and capacity engineering |
 | Application runtime | Java 17, Spring Boot, four AFM application components, executable JARs and Docker images |
 | Database | Amazon RDS PostgreSQL |
 | Application ingress | Route 53, ACM, Application Load Balancer and AWS Load Balancer Controller |
@@ -121,11 +144,12 @@ AFM v3 is implemented as a collection of independently versioned application, in
 | Secrets | AWS Secrets Manager, External Secrets and Kubernetes Secret integration |
 | Observability | Prometheus, Grafana, Alertmanager, YACE, CloudWatch and Slack notifications |
 | SRE operations | Service health, request/error/latency metrics, SLO-oriented views, alerting and incident runbooks |
-| AI-assisted operations | APA, Streamlit, static RAG, ChromaDB, OpenAI API, Kubernetes API and Boto3 |
+| AI-assisted platform operations | APA, Streamlit, OpenAI API, project-grounded RAG, ChromaDB, Kubernetes API and Boto3 |
 | Platform safety | Strictly read-only APA permissions for AWS and Kubernetes access |
 
-The project therefore contains both the **platform infrastructure** and the **delivery/operations systems required to operate the reference workload on that platform**.
-
+The project therefore contains both the **platform infrastructure** and the
+**delivery and operations systems required to run the reference application
+on that platform**.
 
 ---
 
@@ -285,16 +309,9 @@ AFM v3 demonstrates an end-to-end engineering lifecycle across:
 The main body of this README explains **what the project contains, how the components work together, and how software and infrastructure move through the platform**. Detailed architectural reasoning is intentionally consolidated at the end.
 
 ---
-### AFM v3 — 3-Tier Application Architecture
+## 🏗️ Architecture
 
-![AFM v3 3-Tier Architecture](screenshots/afm-project/diagrams/afm-v3-3-tier-architecture-logical-view.png)
-
-*Logical view of the AFM v3 three-tier application architecture and the
-cross-cutting AWS EKS, GitOps, CI/CD, observability, security and
-read-only AI-assisted operations capabilities.*
-
----
-# 🔄 How AFM v3 Works End-to-End
+### 🔄 How AFM v3 Works End-to-End
 
 The complete lifecycle connects source code, infrastructure, security, deployment, observability and read-only operational assistance.
 
